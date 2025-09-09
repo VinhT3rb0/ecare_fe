@@ -1,7 +1,13 @@
-import type { NextConfig } from "next";
+/** @type {import('next').NextConfig} */
+const withAntdLess = require("next-plugin-antd-less");
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
-
-export default nextConfig;
+module.exports = withAntdLess({
+  reactStrictMode: true,
+  images: {
+    domains: ["res.cloudinary.com"],
+  },
+  lessVarsFilePath: "./src/styles/antd-theme.less",
+  modifyVars: {
+    "@primary-color": "#11A998",
+  },
+});
