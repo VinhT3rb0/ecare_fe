@@ -10,6 +10,7 @@ import BookingSection from "./homePage/components/BookingSection";
 import ChatBox from "./homePage/components/ChatBox";
 import { getCookie } from "cookies-next";
 import Footer from "@/components/Footer/Footer";
+import WhyChooseUs from "./homePage/components/WhyChooseUs";
 
 function HomePage() {
     const role = getCookie('role');
@@ -22,6 +23,7 @@ function HomePage() {
                 backgroundImage="/images/homePage/Introsection.jpg"
                 featureImage="/images/homePage/doctor.jpg"
             />
+            <WhyChooseUs />
             <SupportTreatmentSection featureImage="/images/homePage/treatment.jpg" />
             <BookingSection
                 bookingImage="/images/homePage/bookingSection.jpg"

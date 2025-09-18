@@ -12,6 +12,10 @@ import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     MessageOutlined,
+    LinkOutlined,
+    ScheduleOutlined,
+    DatabaseOutlined,
+    FileTextOutlined,
 } from "@ant-design/icons";
 import { usePathname, useRouter } from "next/navigation";
 import { getCookie } from "cookies-next";
@@ -67,6 +71,12 @@ const ManagementLayout: React.FC<ManagementLayoutProps> = ({ children }) => {
                     onClick: () => router.push("/management/doctor"),
                 },
                 {
+                    key: "medicine",
+                    icon: <LinkOutlined />,
+                    label: "Quản lý thuốc",
+                    onClick: () => router.push("/management/medicine"),
+                },
+                {
                     key: "specialty",
                     icon: <CalendarOutlined />,
                     label: "Chuyên khoa",
@@ -87,9 +97,9 @@ const ManagementLayout: React.FC<ManagementLayoutProps> = ({ children }) => {
             ]
             : [
                 {
-                    key: "doctor-dashboard",
-                    icon: <DashboardOutlined />,
-                    label: "Trang chủ bác sĩ",
+                    key: "patient-list",
+                    icon: <ScheduleOutlined />,
+                    label: "Danh sách bệnh nhân",
                     onClick: () => router.push("/management/doctor"),
                 },
                 {
@@ -100,9 +110,21 @@ const ManagementLayout: React.FC<ManagementLayoutProps> = ({ children }) => {
                 },
                 {
                     key: "doctor-patients",
-                    icon: <TeamOutlined />,
-                    label: "Lịch khám bệnh nhân",
+                    icon: <DatabaseOutlined />,
+                    label: "Lịch khám chờ xác nhận",
                     onClick: () => router.push("/management/patientAppointments"),
+                },
+                {
+                    key: "today-patients",
+                    icon: <FileTextOutlined />,
+                    label: "Lịch khám hôm nay",
+                    onClick: () => router.push("/management/todayAppointment"),
+                },
+                {
+                    key: "intreatment-patients",
+                    icon: <TeamOutlined />,
+                    label: "Đang điều trị",
+                    onClick: () => router.push("/management/inTreatmentPatient"),
                 },
                 {
                     key: "doctor-settings",
@@ -112,7 +134,24 @@ const ManagementLayout: React.FC<ManagementLayoutProps> = ({ children }) => {
 
                 },
             ];
-
+    if (user === "patient") {
+        return (
+            <ConfigProvider
+                theme={{
+                    token: { colorPrimary: "#0d9488", colorBgLayout: "#f9fafb" },
+                    components: {
+                        Menu: { itemSelectedBg: "#009688", itemSelectedColor: "#fff" },
+                    },
+                }}
+            >
+                <Layout style={{ minHeight: "100vh", background: "#f9fafb" }}>
+                    <Content className="m-6 p-6 bg-white rounded-xl shadow-md">
+                        {children}
+                    </Content>
+                </Layout>
+            </ConfigProvider>
+        );
+    }
     return (
         <ConfigProvider
             theme={{

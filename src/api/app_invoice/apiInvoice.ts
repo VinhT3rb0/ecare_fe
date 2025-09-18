@@ -46,12 +46,37 @@ export const apiInvoice = createApi({
             query: (invoice_id) => `/${invoice_id}/packages`,
             providesTags: ["Invoice"],
         }),
+        updateInvoice: builder.mutation<any, { id: number; has_insurance?: boolean; status?: string; payment_method?: string }>({
+            query: ({ id, ...body }) => ({
+                url: `/${id}`,
+                method: "PUT",
+                body,
+            }),
+            invalidatesTags: ["Invoice"],
+        }),
         updatePackageQuantity: builder.mutation<any, { invoice_id: number; package_id: number; quantity: number }>({
             query: ({ invoice_id, package_id, quantity }) => ({ url: `/${invoice_id}/packages/${package_id}/quantity`, method: "PUT", body: { quantity } }),
             invalidatesTags: ["Invoice"],
         }),
         removePackageFromInvoice: builder.mutation<any, { invoice_id: number; package_id: number }>({
             query: ({ invoice_id, package_id }) => ({ url: `/${invoice_id}/packages/${package_id}`, method: "DELETE" }),
+            invalidatesTags: ["Invoice"],
+        }),
+        // Medicines on invoice
+        addMedicinesFromMedicalRecord: builder.mutation<any, number>({
+            query: (invoice_id) => ({ url: `/${invoice_id}/medicines/from-medical-record`, method: "POST" }),
+            invalidatesTags: ["Invoice"],
+        }),
+        getInvoiceMedicines: builder.query<any, number>({
+            query: (invoice_id) => `/${invoice_id}/medicines`,
+            providesTags: ["Invoice"],
+        }),
+        updateInvoiceMedicineQuantity: builder.mutation<any, { invoice_id: number; medicine_id: number; quantity: number }>({
+            query: ({ invoice_id, medicine_id, quantity }) => ({ url: `/${invoice_id}/medicines/${medicine_id}/quantity`, method: "PUT", body: { quantity } }),
+            invalidatesTags: ["Invoice"],
+        }),
+        removeMedicineFromInvoice: builder.mutation<any, { invoice_id: number; medicine_id: number }>({
+            query: ({ invoice_id, medicine_id }) => ({ url: `/${invoice_id}/medicines/${medicine_id}`, method: "DELETE" }),
             invalidatesTags: ["Invoice"],
         }),
         updateInvoiceStatus: builder.mutation<any, { id: number; status: string; payment_method?: string }>({
@@ -73,8 +98,13 @@ export const {
     useCreateInvoiceMutation,
     useAddPackageToInvoiceMutation,
     useGetInvoicePackagesQuery,
+    useUpdateInvoiceMutation,
     useUpdatePackageQuantityMutation,
     useRemovePackageFromInvoiceMutation,
+    useAddMedicinesFromMedicalRecordMutation,
+    useGetInvoiceMedicinesQuery,
+    useUpdateInvoiceMedicineQuantityMutation,
+    useRemoveMedicineFromInvoiceMutation,
     useUpdateInvoiceStatusMutation,
     useDeleteInvoiceMutation,
 } = apiInvoice;

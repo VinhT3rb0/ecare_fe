@@ -5,8 +5,9 @@ import { Card, Col, Row, Button, Tag, Spin, Empty, Space, Typography } from "ant
 import { useGetAppointmentsByStatusQuery } from "@/api/app_apointment/apiAppointment";
 import AppointmentDetail from "./AppointmentDetail";
 import { CheckCircleOutlined, EyeOutlined, UserOutlined, CalendarOutlined, PlayCircleOutlined } from "@ant-design/icons";
-import { useUpdateAppointmentMutation } from "@/api/app_apointment/apiAppointment";
+import { useStartTreatmentMutation } from "@/api/app_apointment/apiAppointment";
 import { useCreateInvoiceMutation } from "@/api/app_invoice/apiInvoice";
+import { useCreateMedicalRecordMutation } from "@/api/app_medical_record/apiMedicalRecord";
 import toast from "react-hot-toast";
 
 const { Text } = Typography;
@@ -16,8 +17,9 @@ export default function ConfirmedAppointments() {
     const appointments = data?.data ?? [];
     const [selected, setSelected] = useState<any | null>(null);
     const [open, setOpen] = useState(false);
-    const [updateAppointment, { isLoading: isUpdating }] = useUpdateAppointmentMutation();
+    const [startTreatment, { isLoading: isStarting }] = useStartTreatmentMutation();
     const [createInvoice] = useCreateInvoiceMutation();
+    const [createMedicalRecord] = useCreateMedicalRecordMutation();
 
     if (isLoading) return <Spin />;
     if (!appointments.length) return <Empty description="Không có lịch hẹn đã xác nhận" />;
@@ -54,15 +56,38 @@ export default function ConfirmedAppointments() {
                                 type="primary"
                                 danger={false}
                                 icon={<PlayCircleOutlined />}
-                                loading={isUpdating}
+                                loading={isStarting}
                                 style={{ marginTop: 8, marginLeft: 8 }}
                                 onClick={async () => {
                                     try {
-                                        await updateAppointment({ id: item.id, data: { status: "in_treatment" } }).unwrap();
+                                        // Bắt đầu điều trị
+                                        await startTreatment({ id: item.id }).unwrap();
                                         try {
-                                            await createInvoice({ appointment_id: item.id, patient_id: item.patient_id }).unwrap();
-                                        } catch { }
-                                        toast.success("Đã bắt đầu điều trị");
+                                            await createMedicalRecord({
+                                                appointment_id: item.id,
+                                                symptoms: "",
+                                                diagnosis: "",
+                                                notes: "",
+                                                medications: [],
+                                                services: []
+                                            }).unwrap();
+                                        } catch (medicalRecordErr: any) {
+                                            console.error("Error creating medical record:", medicalRecordErr);
+                                            // Không dừng quá trình nếu tạo medical record thất bại
+                                        }
+
+                                        // Tạo hóa đơn
+                                        try {
+                                            await createInvoice({
+                                                appointment_id: item.id,
+                                                patient_id: item.patient_id
+                                            }).unwrap();
+                                        } catch (invoiceErr: any) {
+                                            console.error("Error creating invoice:", invoiceErr);
+                                            // Không dừng quá trình nếu tạo invoice thất bại
+                                        }
+
+                                        toast.success("Đã bắt đầu điều trị và tạo hồ sơ bệnh án");
                                     } catch (err: any) {
                                         toast.error(err?.data?.message || "Không thể bắt đầu điều trị");
                                     }

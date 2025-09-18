@@ -25,7 +25,7 @@ export const apiDoctor = createApi({
                 if (params) {
                     const searchParams = new URLSearchParams();
                     if (params.page) searchParams.append("page", params.page.toString());
-                    if (params.limit) searchParams.append("limit", params.limit.toString());
+                    if (params.limit) searchParams.append("pageSize", params.limit.toString());
                     if (params.name) searchParams.append("name", params.name);
                     queryString = `?${searchParams.toString()}`;
                 }

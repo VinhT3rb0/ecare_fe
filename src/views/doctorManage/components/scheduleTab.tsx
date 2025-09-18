@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { useGetDoctorSchedulesQuery, useDeleteScheduleMutation } from "@/api/app_doctor/apiSchedulesDoctor";
 import type { DoctorSchedule } from "@/api/app_doctor/apiSchedulesDoctor";
 import { useGetDoctorApprovedQuery } from "@/api/app_doctor/apiDoctor";
+import toast from "react-hot-toast";
 
 const { RangePicker } = DatePicker;
 
@@ -112,10 +113,10 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ doctorId }) => {
                         onClick={async () => {
                             try {
                                 await deleteSchedule(Number(record.id)).unwrap();
-                                message.success("Xóa lịch làm việc thành công!");
+                                toast.success("Xóa lịch làm việc thành công!");
                                 refetch();
                             } catch (error: any) {
-                                message.error(error?.data?.message || "Có lỗi xảy ra khi xóa!");
+                                toast.error(error?.data?.message || "Có lỗi xảy ra khi xóa!");
                             }
                         }}
                     >

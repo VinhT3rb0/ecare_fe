@@ -1,28 +1,24 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { Modal, Form, Select, InputNumber, message } from "antd";
+import { useMemo } from "react";
+import { Modal, Form, Select, InputNumber } from "antd";
 import { useGetPackagesByDepartmentQuery } from "@/api/app_package/apiPackage";
 import { useAddPackageToInvoiceMutation, useCreateInvoiceMutation, useGetInvoiceByAppointmentQuery } from "@/api/app_invoice/apiInvoice";
+import toast from "react-hot-toast";
 
 type Props = {
     open: boolean;
     onClose: () => void;
     appointment: any | null;
+    invoice: any | null;
 };
 
-export default function AddTreatmentServiceModal({ open, onClose, appointment }: Props) {
+export default function AddTreatmentServiceModal({ open, onClose, appointment, invoice }: Props) {
     const [form] = Form.useForm();
     const departmentId = appointment?.Department?.id || appointment?.department_id;
     const { data: packagesResp, isFetching: isFetchingPkgs } = useGetPackagesByDepartmentQuery(departmentId?.toString() ?? "", { skip: !departmentId });
     const [addPackageToInvoice, { isLoading: isAdding }] = useAddPackageToInvoiceMutation();
     const [createInvoice] = useCreateInvoiceMutation();
-    const { data: invoiceByAppt, refetch } = useGetInvoiceByAppointmentQuery(appointment?.id!, { skip: !appointment?.id });
-
-    useEffect(() => {
-        if (open && appointment?.id) refetch();
-        if (open) form.resetFields();
-    }, [open, appointment, refetch, form]);
 
     const packageOptions = useMemo(() => {
         const items = packagesResp?.data || packagesResp || [];
@@ -30,8 +26,11 @@ export default function AddTreatmentServiceModal({ open, onClose, appointment }:
     }, [packagesResp]);
 
     const ensureInvoiceId = async () => {
-        if (invoiceByAppt?.data?.id) return invoiceByAppt.data.id;
-        const result = await createInvoice({ appointment_id: appointment.id, patient_id: appointment.patient_id }).unwrap();
+        if (invoice?.id) return invoice.id;
+        const result = await createInvoice({
+            appointment_id: appointment.id,
+            patient_id: appointment.patient_id,
+        }).unwrap();
         return result.data?.id;
     };
 
@@ -40,10 +39,10 @@ export default function AddTreatmentServiceModal({ open, onClose, appointment }:
             const values = await form.validateFields();
             const invoiceId = await ensureInvoiceId();
             await addPackageToInvoice({ invoice_id: invoiceId, package_id: values.package_id, quantity: values.quantity || 1 }).unwrap();
-            message.success("Đã thêm dịch vụ vào hóa đơn");
+            toast.success("Đã thêm dịch vụ vào hóa đơn");
             onClose();
         } catch (err: any) {
-            message.error(err?.data?.message || "Thêm dịch vụ thất bại");
+            toast.error(err?.data?.message || "Thêm dịch vụ thất bại");
         }
     };
 

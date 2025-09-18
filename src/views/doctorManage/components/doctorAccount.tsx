@@ -29,18 +29,16 @@ import DoctorDetail from "./doctorDetail";
 const DoctorAccount: React.FC = () => {
     const [searchValue, setSearchValue] = useState<string>("");
     const debouncedSearch = useDebounce(searchValue, 400);
+    const [page, setPage] = useState<number>(1);
+    const [limit, setLimit] = useState<number>(10);
     const [open, setOpen] = useState(false);
     const [editData, setEditData] = useState<any>(null);
     const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
     const [detailOpen, setDetailOpen] = useState(false);
 
-    const { data, isLoading } = useGetAllDoctorsQuery({ page: 1, limit: 100 });
+    const { data, isLoading } = useGetAllDoctorsQuery({ page, limit, name: debouncedSearch || undefined });
     const doctors = data?.doctors || [];
-
-    const filteredDoctors = doctors.filter((doctor: any) =>
-        doctor.full_name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        doctor.specialization?.toLowerCase().includes(debouncedSearch.toLowerCase())
-    );
+    const total = data?.total || 0;
 
     const doctorColumns = [
         {
@@ -52,7 +50,7 @@ const DoctorAccount: React.FC = () => {
                     <div className="ml-3">
                         <div className="font-semibold">{record.full_name}</div>
                         <div className="text-sm text-gray-500">
-                            {record.Departments?.map((dept: any) => dept.name).join(", ")}
+                            {record.departments?.map((dept: any) => dept.name).join(", ")}
                         </div>
                     </div>
                 </div>
@@ -89,10 +87,10 @@ const DoctorAccount: React.FC = () => {
         <Card>
             <Row gutter={16} className="mb-6">
                 <Col span={6}>
-                    <Statistic title="Tổng số bác sĩ" value={doctors.length} prefix={<UserOutlined />} />
+                    <Statistic title="Tổng số bác sĩ" value={total} prefix={<UserOutlined />} />
                 </Col>
                 <Col span={6}>
-                    <Statistic title="Đang hoạt động" value={doctors.filter((d: any) => d.status === "active").length} valueStyle={{ color: "#3f8600" }} />
+                    <Statistic title="Đang hoạt động" value={doctors.filter((d: any) => d.is_approved).length} valueStyle={{ color: "#3f8600" }} />
                 </Col>
                 <Col span={6}>
                     <Statistic title="Tỷ lệ đánh giá" value={4.8} suffix="/ 5.0" valueStyle={{ color: "#1890ff" }} />
@@ -118,10 +116,20 @@ const DoctorAccount: React.FC = () => {
 
             <Table
                 columns={doctorColumns}
-                dataSource={filteredDoctors}
+                dataSource={doctors}
                 rowKey="id"
-                pagination={{ pageSize: 10 }}
                 loading={isLoading}
+                pagination={{
+                    current: page,
+                    pageSize: limit,
+                    total,
+                    showSizeChanger: true,
+                    pageSizeOptions: [5, 10, 20, 50, 100]
+                }}
+                onChange={(pagination) => {
+                    setPage(pagination.current || 1);
+                    setLimit(pagination.pageSize || 10);
+                }}
                 onRow={(record) => ({
                     onClick: () => {
                         setSelectedDoctor(record);

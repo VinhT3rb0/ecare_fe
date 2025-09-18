@@ -93,7 +93,7 @@ const AddAndUpdateDoctorAccount: React.FC<
             okText="Lưu"
             cancelText="Hủy"
             confirmLoading={loading}
-            destroyOnClose
+            destroyOnHidden
         >
             <Form form={form} layout="vertical" preserve={false}>
                 <Row gutter={16}>

@@ -6,7 +6,6 @@ import {
     Tag,
     Button,
     Space,
-    message,
     Spin,
     Popconfirm,
     Drawer,
@@ -24,6 +23,7 @@ import {
 } from "@/api/app_apointment/apiAppointment";
 import { useGetMyDoctorQuery } from "@/api/app_doctor/apiDoctor";
 import { getCookie } from "cookies-next";
+import toast from "react-hot-toast";
 
 const { Title } = Typography;
 
@@ -59,14 +59,18 @@ const PatientsAppointments: React.FC = () => {
     const { data: detailData, isLoading: loadingDetail } =
         useGetAppointmentByIdQuery(detailId as number, { skip: !detailId });
 
+
+    const filteredAppointments = appointments?.data?.filter((appointment: any) =>
+        appointment.status === "pending" || appointment.status === "cancel_requested"
+    ) || [];
+
     const handleUpdateStatus = async (id: number, status: string) => {
         try {
             setSelectedAppointment(id);
             await updateAppointment({ id, data: { status } }).unwrap();
-            message.success("Cập nhật trạng thái thành công!");
+            toast.success("Cập nhật trạng thái thành công!");
         } catch (error) {
-            console.error("Error updating appointment status:", error);
-            message.error("Có lỗi xảy ra khi cập nhật trạng thái.");
+            toast.error("Có lỗi xảy ra khi cập nhật trạng thái.");
         } finally {
             setSelectedAppointment(null);
         }
@@ -137,9 +141,9 @@ const PatientsAppointments: React.FC = () => {
                                 onConfirm={async () => {
                                     try {
                                         await approveCancel({ id: record.id }).unwrap();
-                                        message.success("Đã hủy lịch.");
+                                        toast.success("Đã hủy lịch.");
                                     } catch {
-                                        message.error("Thao tác thất bại");
+                                        toast.error("Thao tác thất bại");
                                     }
                                 }}
                             >
@@ -150,9 +154,9 @@ const PatientsAppointments: React.FC = () => {
                                 onConfirm={async () => {
                                     try {
                                         await rejectCancel({ id: record.id }).unwrap();
-                                        message.success("Đã từ chối yêu cầu.");
+                                        toast.success("Đã từ chối yêu cầu.");
                                     } catch {
-                                        message.error("Thao tác thất bại");
+                                        toast.error("Thao tác thất bại");
                                     }
                                 }}
                             >
@@ -184,7 +188,7 @@ const PatientsAppointments: React.FC = () => {
         <div>
             <Table
                 columns={columns}
-                dataSource={appointments?.data || []}
+                dataSource={filteredAppointments}
                 rowKey="id"
                 pagination={{ pageSize: 10 }}
                 bordered
@@ -252,9 +256,9 @@ const PatientsAppointments: React.FC = () => {
                                     onConfirm={async () => {
                                         try {
                                             await approveCancel({ id: detailData.data.id }).unwrap();
-                                            message.success("Đã hủy lịch.");
+                                            toast.success("Đã hủy lịch.");
                                         } catch {
-                                            message.error("Thao tác thất bại");
+                                            toast.error("Thao tác thất bại");
                                         }
                                     }}
                                 >
@@ -265,9 +269,9 @@ const PatientsAppointments: React.FC = () => {
                                     onConfirm={async () => {
                                         try {
                                             await rejectCancel({ id: detailData.data.id }).unwrap();
-                                            message.success("Đã từ chối yêu cầu.");
+                                            toast.success("Đã từ chối yêu cầu.");
                                         } catch {
-                                            message.error("Thao tác thất bại");
+                                            toast.error("Thao tác thất bại");
                                         }
                                     }}
                                 >

@@ -5,12 +5,12 @@ import {
     BellOutlined,
     UserOutlined,
     DownOutlined,
-    SearchOutlined,
     LogoutOutlined,
     ProfileOutlined,
+    PhoneOutlined,
 } from '@ant-design/icons';
 import { getCookie, deleteCookie } from 'cookies-next';
-import { Dropdown, Input, Avatar, Button, MenuProps, Menu, Badge } from 'antd';
+import { Dropdown, Avatar, Button, MenuProps, Badge } from 'antd';
 import Link from 'next/link';
 import { useGetAccountQuery } from '@/api/app_home/apiAccount';
 import { useRouter } from 'next/navigation';
@@ -46,12 +46,12 @@ const Navbar = () => {
     };
 
     const userMenuItems: MenuProps['items'] = [
+
         {
             key: "profile",
             icon: <ProfileOutlined />,
             label: <Link href="/profile">Tài khoản</Link>,
         },
-        { type: "divider" },
         {
             key: "logout",
             icon: <LogoutOutlined />,
@@ -59,36 +59,26 @@ const Navbar = () => {
             onClick: handleLogout,
         },
     ];
-
-    const serviceMenu = (
-        <Menu
-            items={[
-                { key: "tim-mach", label: <Link href="/services/tim-mach">Khoa Tim mạch</Link> },
-                { key: "xuong-khop", label: <Link href="/services/xuong-khop">Khoa Xương khớp</Link> },
-                { key: "than-kinh", label: <Link href="/services/than-kinh">Khoa Thần kinh</Link> },
-                { key: "noi-tiet", label: <Link href="/services/noi-tiet">Khoa Nội tiết</Link> },
-            ]}
-        />
-    );
-
-    // Doctor profile (name/department) via doctor detail API when role is doctor
-    const { data: myDoctor, isLoading: loadingDoctor } = useGetMyDoctorQuery(userIdCookie as string, { skip: role !== 'doctor' || !userIdCookie });
-
-    // Notifications: appointments updates for this patient
+    const { data: myDoctor } = useGetMyDoctorQuery(userIdCookie as string, { skip: role !== 'doctor' || !userIdCookie });
     const { data: appts } = useGetAppointmentsByPatientQuery(
         { patient_id: Number(patientIdCookie) || 0 },
         { skip: !patientIdCookie }
     );
 
     const allAppts = (appts?.data || []) as any[];
-    const confirmedNotifs = allAppts.filter((a) => a.status === 'confirmed');
-    const cancelledNotifs = allAppts.filter((a) => a.status === 'cancelled');
-    const notifications = [...confirmedNotifs, ...cancelledNotifs];
+    const sortedAppts = [...allAppts].sort((a, b) => {
+        return new Date(b.createdAt || b.created_at || 0).getTime() -
+            new Date(a.createdAt || a.created_at || 0).getTime();
+    });
+    const confirmedNotifs = sortedAppts.filter((a) => a.status === 'confirmed');
+    const cancelledNotifs = sortedAppts.filter((a) => a.status === 'cancelled');
+    const cancelRequestedNotifs = sortedAppts.filter((a) => a.status === 'cancel_requested');
+    const notifications = [...confirmedNotifs, ...cancelledNotifs, ...cancelRequestedNotifs].slice(0, 3);
     const notifCount = notifications.length;
-    const notifMenu: MenuProps['items'] = notifications.slice(0, 8).map((a: any) => ({
+    const notifMenu: MenuProps['items'] = notifications.map((a: any) => ({
         key: String(a.id),
         label: (
-            <Link href="/management/patientAppointments">
+            <Link href="/profile">
                 {a.status === 'confirmed' ? (
                     <>
                         <p>Xin chào <span className="font-bold">{a.patient_name}</span></p>
@@ -97,10 +87,18 @@ const Navbar = () => {
                         <p>Khung giờ: {a.time_slot}</p>
                         <p>Vui lòng đến đúng giờ. Cám ơn bạn!</p>
                     </>
-                ) : (
+                ) : a.status === 'cancelled' ? (
                     <>
                         <p>Xin chào <span className="font-bold">{a.patient_name}</span></p>
                         <p>Yêu cầu hủy lịch hẹn của bạn đã được xác nhận.</p>
+                        <p>Ngày: {a.appointment_date}</p>
+                        <p>Khung giờ: {a.time_slot}</p>
+                        {a.cancel_reason && <p>Lý do: {a.cancel_reason}</p>}
+                    </>
+                ) : (
+                    <>
+                        <p>Xin chào <span className="font-bold">{a.patient_name}</span></p>
+                        <p>Yêu cầu hủy lịch hẹn của bạn đang chờ xác nhận.</p>
                         <p>Ngày: {a.appointment_date}</p>
                         <p>Khung giờ: {a.time_slot}</p>
                         {a.cancel_reason && <p>Lý do: {a.cancel_reason}</p>}
@@ -109,14 +107,15 @@ const Navbar = () => {
             </Link>
         ),
     }));
-
     return (
-        <nav className={`top-0 left-0 w-full z-200 px-6 py-3 flex items-center justify-between
-            transition-all duration-500 ease-in-out
-            ${isFixed
-                ? 'fixed bg-black/70 backdrop-blur-md shadow-lg'
-                : 'absolute bg-black/10 backdrop-blur-sm'
-            }`}>
+        <nav
+            className={`top-0 left-0 w-full z-200 px-6 py-3 flex items-center justify-between
+        transition-all duration-500 ease-in-out
+        ${isFixed
+                    ? 'fixed bg-gradient-to-r from-[#0A3C73]/95 to-[#00A78E]/95 shadow-lg backdrop-blur-md'
+                    : 'absolute bg-black/60 shadow-md'
+                }`}
+        >
             <div className="flex-shrink-0">
                 <Link href="/">
                     <img src="/images/logoEcare.png" alt="Logo" className="h-12 md:h-16" />
@@ -132,13 +131,11 @@ const Navbar = () => {
                     <Link href="/management" className="text-white hover:text-[#11A998] font-medium">Quản lý</Link>
                 )}
             </div>
-            <div className="flex items-center space-x-4">
-                <Input
-                    className="hidden md:block w-64 rounded-full"
-                    prefix={<SearchOutlined className="text-gray-400" />}
-                    placeholder="Tìm kiếm..."
-                    allowClear
-                />
+            <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-2 text-white">
+                    <PhoneOutlined className="text-xl text-[#00FFCF]" />
+                    <span className="hidden sm:block">Cấp cứu: 1900 686 888</span>
+                </div>
                 {user && !isLoading ? (
                     <>
                         <Dropdown menu={{ items: notifMenu }} trigger={["click"]}>

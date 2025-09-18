@@ -55,7 +55,11 @@ const ChatBox: React.FC = () => {
     );
     const [sendMessageMutation] = useSendMessageMutation();
 
-    // map DB -> UI
+    useEffect(() => {
+        if (visible) {
+            setTimeout(() => scrollToBottom(), 50);
+        }
+    }, [visible, messages]);
     useEffect(() => {
         if (!conversationData) return;
         const mapped: ChatMessage[] = conversationData.map((m: any) => ({

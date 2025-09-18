@@ -1,6 +1,7 @@
 "use client";
 import { Typography, Card } from "antd";
 import Image from "next/image";
+import { motion, Variants } from "framer-motion";
 
 const { Title, Paragraph } = Typography;
 
@@ -37,6 +38,19 @@ const services: Service[] = [
     },
 ];
 
+const fadeUp: Variants = {
+    hidden: { opacity: 0, y: 40 },
+    visible: (i: number) => ({
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.6,
+            delay: i * 0.2,
+            ease: "easeOut",
+        },
+    }),
+};
+
 export default function ServicesSection() {
     return (
         <section className="py-20 bg-gray-50">
@@ -52,27 +66,40 @@ export default function ServicesSection() {
                 {/* Danh sách dịch vụ */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {services.map((service, index) => (
-                        <Card
+                        <motion.div
                             key={index}
-                            hoverable
-                            className="rounded-xl border-2 border-[#00A78E] hover:border-[#0ACFB1] transition-all shadow-md"
-                            cover={
-                                <Image
-                                    src={service.image}
-                                    alt={service.title}
-                                    width={500}
-                                    height={350}
-                                    className="rounded-t-xl object-cover h-56"
-                                />
-                            }
+                            custom={index}
+                            initial="hidden"
+                            whileInView="visible"
+                            variants={fadeUp}
+                            viewport={{ once: true, amount: 0.2 }}
+                            whileHover={{ scale: 1.05 }}
+                            transition={{ type: "spring", stiffness: 200 }}
+                            className="h-full"
                         >
-                            <h3 className="text-lg font-bold text-[#00A78E] mb-2">
-                                {service.title}
-                            </h3>
-                            <Paragraph className="text-gray-600 text-sm leading-relaxed">
-                                {service.description}
-                            </Paragraph>
-                        </Card>
+                            <Card
+                                hoverable
+                                className="h-full flex flex-col justify-between rounded-xl border-2 border-[#00A78E] hover:border-[#0ACFB1] transition-all shadow-md"
+                                cover={
+                                    <Image
+                                        src={service.image}
+                                        alt={service.title}
+                                        width={500}
+                                        height={350}
+                                        className="rounded-t-xl object-cover h-56"
+                                    />
+                                }
+                            >
+                                <div className="flex flex-col flex-grow">
+                                    <h3 className="text-lg font-bold text-[#00A78E] mb-2">
+                                        {service.title}
+                                    </h3>
+                                    <Paragraph className="text-gray-600 text-sm leading-relaxed flex-grow">
+                                        {service.description}
+                                    </Paragraph>
+                                </div>
+                            </Card>
+                        </motion.div>
                     ))}
                 </div>
             </div>

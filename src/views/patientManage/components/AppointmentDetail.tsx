@@ -18,7 +18,7 @@ import {
 const { Title } = Typography;
 import RescheduleAppointmentModal from "./RescheduleAppointmentModal";
 import toast from "react-hot-toast";
-import { useUpdateAppointmentMutation } from "@/api/app_apointment/apiAppointment";
+import { useUpdateAppointmentMutation, useDoctorCancelAppointmentMutation } from "@/api/app_apointment/apiAppointment";
 
 type Appointment = {
     id: number;
@@ -74,6 +74,7 @@ export default function AppointmentDetail({
         in_treatment: { color: "purple", icon: <MedicineBoxOutlined />, label: "Đang điều trị" } as any,
     } as any;
     const [updateAppointment, { isLoading }] = useUpdateAppointmentMutation();
+    const [doctorCancelAppointment, { isLoading: isCancelling }] = useDoctorCancelAppointmentMutation();
 
     const handleConfirm = async () => {
         if (!appointment) return;
@@ -88,11 +89,14 @@ export default function AppointmentDetail({
     const handleCancel = async () => {
         if (!appointment) return;
         try {
-            await updateAppointment({ id: appointment.id, data: { status: "cancelled" } }).unwrap();
-            toast.success("Lịch hẹn đã được hủy");
+            await doctorCancelAppointment({
+                id: appointment.id,
+                reason: "Bác sĩ hủy lịch hẹn"
+            }).unwrap();
+            toast.success("Lịch hẹn đã được hủy và đã gửi email thông báo cho bệnh nhân");
             onClose();
         } catch (err: any) {
-            toast.error(err?.data?.message || "Xác nhận thất bại");
+            toast.error(err?.data?.message || "Hủy lịch hẹn thất bại");
         }
     };
     return (
@@ -168,14 +172,24 @@ export default function AppointmentDetail({
                     </Descriptions>
                     {appointment.status === "pending" && (
                         <div style={{ marginTop: 24, textAlign: "right" }}>
-                            <Button type="primary" loading={isLoading} onClick={handleConfirm}>
+                            <Button type="primary" loading={isLoading} onClick={handleConfirm} style={{ marginRight: 8 }}>
                                 Xác nhận lịch hẹn
+                            </Button>
+                            <Button danger loading={isCancelling} onClick={handleCancel}>
+                                Hủy lịch hẹn
+                            </Button>
+                        </div>
+                    )}
+                    {appointment.status === "confirmed" && (
+                        <div style={{ marginTop: 24, textAlign: "right" }}>
+                            <Button danger loading={isCancelling} onClick={handleCancel}>
+                                Hủy lịch hẹn
                             </Button>
                         </div>
                     )}
                     {appointment.status === "cancel_requested" && (
                         <div style={{ marginTop: 24, textAlign: "right" }}>
-                            <Button type="primary" loading={isLoading} onClick={handleCancel}>
+                            <Button type="primary" loading={isCancelling} onClick={handleCancel}>
                                 Xác nhận hủy lịch
                             </Button>
                         </div>

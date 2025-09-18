@@ -242,7 +242,7 @@ const DoctorShift: React.FC = () => {
                 onCancel={() => setScheduleModalOpen(false)}
                 width={700}
                 footer={null}
-                destroyOnClose
+                destroyOnHidden
             >
                 <AddAndUpdateDoctorSchedule
                     visible={scheduleModalOpen}

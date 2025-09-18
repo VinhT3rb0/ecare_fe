@@ -12,6 +12,9 @@ import { apiDegree } from '@/api/app_degree/apiDegree';
 import { apiChat } from '@/api/app_chat/apiChatbox';
 import { apiAppointment } from '@/api/app_apointment/apiAppointment';
 import { apiInvoice } from '@/api/app_invoice/apiInvoice';
+import { apiPayment } from '@/api/app_payment/apiPayment';
+import { apiMedicine } from '@/api/app_medicine/apiMedicine';
+import { apiMedicalRecord } from '@/api/app_medical_record/apiMedicalRecord';
 export interface RootState {
 }
 
@@ -31,6 +34,11 @@ export const makeStore = () => {
             [apiChat.reducerPath]: apiChat.reducer,
             [apiAppointment.reducerPath]: apiAppointment.reducer,
             [apiInvoice.reducerPath]: apiInvoice.reducer,
+            [apiPayment.reducerPath]: apiPayment.reducer,
+            [apiMedicine.reducerPath]: apiMedicine.reducer,
+            [apiMedicalRecord.reducerPath]: apiMedicalRecord.reducer,
+
+
 
         },
         middleware: (getDefaultMiddleware) =>
@@ -44,7 +52,10 @@ export const makeStore = () => {
                 apiRoom.middleware,
                 apiChat.middleware,
                 apiAppointment.middleware,
-                apiInvoice.middleware
+                apiInvoice.middleware,
+                apiPayment.middleware,
+                apiMedicine.middleware,
+                apiMedicalRecord.middleware
             ),
     });
 };

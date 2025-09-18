@@ -1,11 +1,11 @@
 import React from "react";
 import Profile from "@/views/profile/Profile";
+import Navbar from "@/components/Navbar/NavBar";
 function page() {
-    return <div>
-        <div className={`absolute top-0 left-0 w-full h-[250px] bg-gradient-to-b  from-blue-500 z-0`}></div>
-
+    return <>
+        <Navbar />
         <Profile />
-    </div>
+    </>
 }
 
 export default page;

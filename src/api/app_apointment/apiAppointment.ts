@@ -98,8 +98,12 @@ export const apiAppointment = createApi({
                 `/available-time-slots/${doctor_id}/${appointment_date}`, // Sử dụng URL đơn giản
             transformResponse: (response: any) => response.data || [], // Đảm bảo trả về mảng
         }),
-        getAppointmentsByDoctor: builder.query<AppointmentResponse, { doctor_id: number }>({
-            query: ({ doctor_id }) => `/doctor/${doctor_id}`,
+        getAppointmentsByDoctor: builder.query<AppointmentResponse, { doctor_id: number; status?: string }>({
+            query: ({ doctor_id, status }) => {
+                const params = new URLSearchParams();
+                if (status) params.append('status', status);
+                return `/doctor/${doctor_id}${params.toString() ? `?${params.toString()}` : ''}`;
+            },
             providesTags: ["Appointment"],
         }),
         getAppointmentsByPatient: builder.query<AppointmentResponse, { patient_id: number }>({
@@ -109,6 +113,36 @@ export const apiAppointment = createApi({
         getAppointmentsByStatus: builder.query<AppointmentResponse, { status: string }>({
             query: ({ status }) => `/status/${status}`,
             providesTags: ["Appointment"],
+        }),
+        getAppointmentsByDoctorAndDate: builder.query<AppointmentResponse, { doctor_id: number; appointment_date: string }>({
+            query: ({ doctor_id, appointment_date }) => `/doctor/${doctor_id}/date/${appointment_date}`,
+            providesTags: ["Appointment"],
+        }),
+        checkAppointmentAvailability: builder.query<{ success: boolean; available: boolean; message: string }, { patient_id: number; doctor_id: number; appointment_date: string; time_slot: string }>({
+            query: ({ patient_id, doctor_id, appointment_date, time_slot }) =>
+                `/check-availability?patient_id=${patient_id}&doctor_id=${doctor_id}&appointment_date=${appointment_date}&time_slot=${time_slot}`,
+        }),
+        startTreatment: builder.mutation<any, { id: number }>({
+            query: ({ id }) => ({
+                url: `/${id}/start-treatment`,
+                method: "POST",
+            }),
+            invalidatesTags: ["Appointment"],
+        }),
+        autoCancelOverdueAppointments: builder.mutation<any, void>({
+            query: () => ({
+                url: `/auto-cancel-overdue`,
+                method: "POST",
+            }),
+            invalidatesTags: ["Appointment"],
+        }),
+        doctorCancelAppointment: builder.mutation<any, { id: number; reason?: string }>({
+            query: ({ id, reason }) => ({
+                url: `/${id}/doctor-cancel`,
+                method: "POST",
+                body: { reason },
+            }),
+            invalidatesTags: ["Appointment"],
         }),
     }),
 });
@@ -126,4 +160,9 @@ export const {
     useApproveCancelAppointmentMutation,
     useRejectCancelAppointmentMutation,
     useGetAppointmentsByStatusQuery,
+    useGetAppointmentsByDoctorAndDateQuery,
+    useCheckAppointmentAvailabilityQuery,
+    useStartTreatmentMutation,
+    useAutoCancelOverdueAppointmentsMutation,
+    useDoctorCancelAppointmentMutation,
 } = apiAppointment;

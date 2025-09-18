@@ -1,20 +1,23 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
-import { Form, Input, DatePicker, Select, Button, Row, Col, message } from "antd";
+import { Form, Input, DatePicker, Select, Button, Row, Col, message, Tag, Spin } from "antd";
 import dayjs from "dayjs";
 import { useGetDepartmentsQuery } from "@/api/app_doctor/apiDepartmentDoctor";
 import { useGetDoctorsByDateAndDepartmentQuery } from "@/api/app_doctor/apiDoctor";
-import { useGetAvailableTimeSlotsQuery, useCreateAppointmentMutation } from "@/api/app_apointment/apiAppointment";
+import { useGetAvailableTimeSlotsQuery, useCreateAppointmentMutation, useCheckAppointmentAvailabilityQuery } from "@/api/app_apointment/apiAppointment";
 import { useGetDoctorSchedulesQuery } from "@/api/app_doctor/apiSchedulesDoctor";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { getAccessTokenFromCookie } from "@/utils/token";
+import { useGetAccountQuery } from "@/api/app_home/apiAccount";
 
 const { Option } = Select;
 
 interface Props {
     onClose: () => void;
 }
+
+const TIME_FMT = "HH:mm";
 
 const BookingByDateForm: React.FC<Props> = ({ onClose }) => {
     const [loading, setLoading] = useState(false);
@@ -23,11 +26,24 @@ const BookingByDateForm: React.FC<Props> = ({ onClose }) => {
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [selectedDoctor, setSelectedDoctor] = useState<number | null>(null);
     const [scheduleId, setScheduleId] = useState<number | null>(null); // Lưu `schedule_id`
+    const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
+    // lấy user_id từ access token
+    const currentUserId = useMemo(() => {
+        try {
+            const token = getAccessTokenFromCookie();
+            if (!token) return null;
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            return payload?.user_id ?? payload?.id ?? payload?.sub ?? null;
+        } catch {
+            return null;
+        }
+    }, []);
 
     // Fetch departments
     const { data: departments, isLoading: isLoadingDepartments } = useGetDepartmentsQuery();
 
-    // Fetch doctors by department and date
+    const { data: user } = useGetAccountQuery();
     const { data: doctors, isLoading: isLoadingDoctors } = useGetDoctorsByDateAndDepartmentQuery(
         { date: selectedDate || "", department_id: selectedDepartment || 0 },
         { skip: !selectedDepartment || !selectedDate }
@@ -45,21 +61,41 @@ const BookingByDateForm: React.FC<Props> = ({ onClose }) => {
         { skip: !selectedDoctor || !selectedDate }
     );
 
-    // Mutation to create appointment
+    // Filter time slots based on current time
+    const timeOptions = useMemo(() => {
+        const slots: string[] = timeSlots || [];
+        const now = dayjs();
+        const isToday = selectedDate ? dayjs(selectedDate).isSame(now, "day") : false;
+
+        return slots.map((t: string) => {
+            const [start, end] = t.split("-");
+            const slotStart = dayjs(start, TIME_FMT);
+            const slotEnd = dayjs(end, TIME_FMT);
+            const isDisabled = isToday && slotEnd.isBefore(now, "minute");
+
+            return {
+                label: t,
+                value: t,
+                disabled: isDisabled,
+            };
+        });
+    }, [timeSlots, selectedDate]);
+
     const [createAppointment] = useCreateAppointmentMutation();
     const router = useRouter();
 
-    // lấy user_id từ access token
-    const currentUserId = useMemo(() => {
-        try {
-            const token = getAccessTokenFromCookie();
-            if (!token) return null;
-            const payload = JSON.parse(atob(token.split(".")[1]));
-            return payload?.user_id ?? payload?.id ?? payload?.sub ?? null;
-        } catch {
-            return null;
+    // Kiểm tra tính khả dụng khi chọn khung giờ
+    const { data: availabilityCheck } = useCheckAppointmentAvailabilityQuery(
+        {
+            patient_id: user?.data?.id || 0,
+            doctor_id: selectedDoctor || 0,
+            appointment_date: selectedDate || "",
+            time_slot: selectedTime || "",
+        },
+        {
+            skip: !currentUserId || !selectedDoctor || !selectedDate || !selectedTime
         }
-    }, []);
+    );
 
     const disabledDate = (current: dayjs.Dayjs) => current && current < dayjs().startOf("day");
 
@@ -78,8 +114,15 @@ const BookingByDateForm: React.FC<Props> = ({ onClose }) => {
                 return;
             }
 
+            // Kiểm tra tính khả dụng trước khi tạo lịch hẹn
+            if (availabilityCheck && !availabilityCheck.available) {
+                toast.error(availabilityCheck.message);
+                setLoading(false);
+                return;
+            }
+
             const payload = {
-                patient_id: currentUserId,
+                patient_id: user?.data?.id,
                 patient_name: values.patient_name,
                 patient_dob: values.patient_dob?.format("YYYY-MM-DD"),
                 patient_phone: values.patient_phone,
@@ -89,28 +132,26 @@ const BookingByDateForm: React.FC<Props> = ({ onClose }) => {
                 department_id: values.department_id,
                 doctor_id: Number(values.doctor_id),
                 appointment_date: values.appointment_date?.format("YYYY-MM-DD"),
-                time_slot: values.time_slot,
-                schedule_id: scheduleId, // Truyền `schedule_id` vào payload
+                time_slot: selectedTime || values.time_slot,
+                schedule_id: scheduleId,
                 reason: values.reason,
             };
-
-            // Gọi API tạo lịch hẹn
             await createAppointment(payload).unwrap();
             toast.success("Đặt lịch thành công!");
             form.resetFields();
             onClose();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error creating appointment:", error);
-            toast.error("Có lỗi xảy ra khi đặt lịch");
+            const errorMessage = error?.data?.message || error?.message || "Có lỗi xảy ra khi đặt lịch";
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
     };
 
-    // Cập nhật `schedule_id` khi `schedules` thay đổi
     useEffect(() => {
         if (schedules?.data?.length) {
-            setScheduleId(schedules.data[0].id); // Lấy `schedule_id` đầu tiên
+            setScheduleId(schedules.data[0].id);
         } else {
             setScheduleId(null);
         }
@@ -161,6 +202,7 @@ const BookingByDateForm: React.FC<Props> = ({ onClose }) => {
                                 setSelectedDepartment(value);
                                 form.setFieldsValue({ doctor_id: null, time_slot: null });
                                 setSelectedDoctor(null);
+                                setSelectedTime(null);
                             }}
                         >
                             {departments?.departments?.map((department: any) => (
@@ -181,6 +223,7 @@ const BookingByDateForm: React.FC<Props> = ({ onClose }) => {
                                 setSelectedDate(formattedDate);
                                 form.setFieldsValue({ doctor_id: null, time_slot: null });
                                 setSelectedDoctor(null);
+                                setSelectedTime(null);
                             }}
                         />
                     </Form.Item>
@@ -193,6 +236,7 @@ const BookingByDateForm: React.FC<Props> = ({ onClose }) => {
                             onChange={(value) => {
                                 setSelectedDoctor(Number(value));
                                 form.setFieldsValue({ time_slot: null });
+                                setSelectedTime(null);
                             }}
                         >
                             {doctors?.data?.map((doctor: any) => (
@@ -205,13 +249,43 @@ const BookingByDateForm: React.FC<Props> = ({ onClose }) => {
                 </Col>
                 <Col span={12}>
                     <Form.Item name="time_slot" label="Khung giờ" rules={[{ required: true }]}>
-                        <Select placeholder="Chọn khung giờ" loading={isLoadingTimeSlots}>
-                            {timeSlots?.map((slot) => (
-                                <Option key={slot} value={slot}>
-                                    {slot}
-                                </Option>
-                            ))}
-                        </Select>
+                        <div className="min-h-[56px] rounded-lg border border-dashed p-3">
+                            {!selectedDoctor || !selectedDate ? (
+                                <div className="text-gray-500">Hãy chọn bác sĩ và ngày để xem các khung giờ.</div>
+                            ) : isLoadingTimeSlots ? (
+                                <div className="flex items-center gap-2 text-gray-500">
+                                    <Spin size="small" /> Đang tải khung giờ...
+                                </div>
+                            ) : timeOptions.length === 0 ? (
+                                <div className="text-gray-500">Không có khung giờ trống cho ngày này.</div>
+                            ) : (
+                                <div className="flex flex-col gap-2">
+                                    {availabilityCheck && !availabilityCheck.available && (
+                                        <div className="text-red-500 bg-red-50 p-2 rounded-md border border-red-200">
+                                            {availabilityCheck.message} – vui lòng chọn khung giờ khác.
+                                        </div>
+                                    )}
+                                    <div className="flex flex-wrap gap-2">
+                                        {timeOptions.map((t) => (
+                                            <Tag.CheckableTag
+                                                key={t.value}
+                                                checked={selectedTime === t.value}
+                                                onChange={() =>
+                                                    !t.disabled &&
+                                                    (setSelectedTime(t.value),
+                                                        form.setFieldsValue({ time_slot: t.value }))
+                                                }
+                                                className={`px-3 py-2 rounded-md border ${selectedTime === t.value ? "!bg-teal-600 !text-white" : "bg-white text-gray-700"
+                                                    } ${t.disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                                                style={{ borderColor: "#e5e7eb" }}
+                                            >
+                                                {t.label}
+                                            </Tag.CheckableTag>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </Form.Item>
                 </Col>
                 <Col span={24}>
@@ -227,6 +301,7 @@ const BookingByDateForm: React.FC<Props> = ({ onClose }) => {
                         type="primary"
                         htmlType="submit"
                         loading={loading}
+                        disabled={!selectedDoctor || !selectedDate || !selectedTime}
                         style={{
                             background: "#11A998",
                             borderColor: "#11A998",

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Modal, Select, Form, message } from "antd";
+import { useEffect, useMemo } from "react";
+import { Modal, Select, Form } from "antd";
 import {
     useGetAvailableTimeSlotsQuery,
     useUpdateAppointmentMutation,
 } from "@/api/app_apointment/apiAppointment";
+import toast from "react-hot-toast";
 
 type Props = {
     open: boolean;
@@ -36,10 +37,10 @@ export default function RescheduleAppointmentModal({ open, onClose, appointment 
         try {
             const values = await form.validateFields();
             await updateAppointment({ id: appointment.id, data: { time_slot: values.time_slot } }).unwrap();
-            message.success("Đã cập nhật khung giờ hẹn");
+            toast.success("Đã cập nhật khung giờ hẹn");
             onClose();
         } catch (err: any) {
-            message.error(err?.data?.message || "Cập nhật thất bại");
+            toast.error(err?.data?.message || "Cập nhật thất bại");
         }
     };
 

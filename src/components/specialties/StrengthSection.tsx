@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { motion, Variants } from "framer-motion";
 
 const highlights = [
     "Quy tụ hơn 500 bác sĩ giỏi chuyên môn, tay nghề cao thuộc nhiều chuyên khoa mũi nhọn.",
@@ -12,30 +13,63 @@ const highlights = [
     "Đội ngũ bác sĩ thường xuyên tham gia các chương trình từ thiện, khám chữa bệnh miễn phí cho người nghèo, vùng sâu vùng xa.",
 ];
 
+const fadeUp: Variants = {
+    hidden: { opacity: 0, y: 40 },
+    visible: (i: number) => ({
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.6,
+            delay: i * 0.15,
+            ease: "easeOut",
+        },
+    }),
+};
+
 export default function StrengthSection() {
     return (
         <section className="relative bg-gradient-to-r from-[#0A3C73] to-[#00A78E] py-16">
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 items-center px-6">
                 {/* Cột ảnh */}
-                <div className="relative h-[1250px] rounded-xl overflow-hidden shadow-lg">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    className="relative h-[600px] md:h-[750px] lg:h-[850px] rounded-xl overflow-hidden shadow-lg"
+                >
                     <Image
                         src="/images/specialties/content1.yhwDzSr-_aTOh1.webp"
                         alt="Đội ngũ bác sĩ"
                         fill
                         className="object-cover"
                     />
-                </div>
+                </motion.div>
 
                 {/* Cột nội dung */}
                 <div>
-                    <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-8">
-                        ĐỘI NGŨ BÁC SĨ <span className="text-[#00FFCF]">CHUYÊN GIA ĐẦU NGÀNH</span>
-                    </h2>
+                    {/* Tiêu đề */}
+                    <motion.h2
+                        initial={{ opacity: 0, y: -30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        viewport={{ once: true, amount: 0.3 }}
+                        className="text-3xl md:text-4xl font-extrabold text-white mb-8"
+                    >
+                        ĐỘI NGŨ BÁC SĨ{" "}
+                        <span className="text-[#00FFCF]">CHUYÊN GIA ĐẦU NGÀNH</span>
+                    </motion.h2>
 
+                    {/* Highlights */}
                     <div className="space-y-6">
                         {highlights.map((item, index) => (
-                            <div
+                            <motion.div
                                 key={index}
+                                custom={index}
+                                initial="hidden"
+                                whileInView="visible"
+                                variants={fadeUp}
+                                viewport={{ once: true, amount: 0.2 }}
                                 className="flex items-start gap-4 bg-white/90 backdrop-blur-sm rounded-xl p-5 shadow-lg"
                             >
                                 <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#00A78E] text-white font-bold shrink-0 shadow-md">
@@ -44,7 +78,7 @@ export default function StrengthSection() {
                                 <p className="text-[#0A3C73] text-base md:text-lg font-medium leading-relaxed">
                                     {item}
                                 </p>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 </div>

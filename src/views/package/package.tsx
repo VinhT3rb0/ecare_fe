@@ -11,11 +11,15 @@ import PackageDetail from './components/PackageDetail';
 const Package = () => {
     const [searchValue, setSearchValue] = useState<string>('');
     const debouncedSearch = useDebounce(searchValue, 400);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const [open, setOpen] = useState(false);
     const [editData, setEditData] = useState<any>(null);
-    const { data, isLoading, isError, refetch } = useGetPackagesQuery(
-        debouncedSearch ? { name: debouncedSearch } : undefined
-    );
+    const { data, isLoading, isError, refetch } = useGetPackagesQuery({
+        page,
+        limit: pageSize,
+        ...(debouncedSearch ? { name: debouncedSearch } : {}),
+    });
     const [detailOpen, setDetailOpen] = useState(false);
     const [detailData, setDetailData] = useState<any>(null);
     const [useDelete] = useDeletePackageMutation();
@@ -205,7 +209,15 @@ const Package = () => {
                     columns={columns}
                     dataSource={data?.data || []}
                     rowKey="id"
-                    pagination={{ pageSize: 10 }}
+                    pagination={{
+                        current: page,
+                        pageSize,
+                        total: data?.total,
+                        onChange: (p, ps) => {
+                            setPage(p);
+                            setPageSize(ps);
+                        },
+                    }}
                 />
             </Card>
             <AddAndUpdatePackage open={open}
