@@ -128,9 +128,7 @@ export default function DoctorDirectoryPage() {
                                                     <span>{doc.education_level} - </span>
                                                     {doc.full_name}
                                                 </h3>
-                                                <p className="text-gray-600 text-sm">
-                                                    {doc.Degrees?.[0]?.specialization}
-                                                </p>
+
                                                 <p className="text-gray-500 text-xs">
                                                     {doc.departments
                                                         ?.map((d: any) => d.name)

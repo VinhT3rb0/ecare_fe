@@ -15,6 +15,8 @@ import { apiInvoice } from '@/api/app_invoice/apiInvoice';
 import { apiPayment } from '@/api/app_payment/apiPayment';
 import { apiMedicine } from '@/api/app_medicine/apiMedicine';
 import { apiMedicalRecord } from '@/api/app_medical_record/apiMedicalRecord';
+import { apiStats } from '@/api/app_stats/apiStats';
+import { apiReview } from '@/api/app_review/apiReview';
 export interface RootState {
 }
 
@@ -37,6 +39,9 @@ export const makeStore = () => {
             [apiPayment.reducerPath]: apiPayment.reducer,
             [apiMedicine.reducerPath]: apiMedicine.reducer,
             [apiMedicalRecord.reducerPath]: apiMedicalRecord.reducer,
+            [apiStats.reducerPath]: apiStats.reducer,
+            [apiReview.reducerPath]: apiReview.reducer,
+
 
 
 
@@ -55,7 +60,10 @@ export const makeStore = () => {
                 apiInvoice.middleware,
                 apiPayment.middleware,
                 apiMedicine.middleware,
-                apiMedicalRecord.middleware
+                apiMedicalRecord.middleware,
+                apiStats.middleware,
+                apiReview.middleware,
+
             ),
     });
 };

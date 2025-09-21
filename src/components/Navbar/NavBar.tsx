@@ -125,10 +125,24 @@ const Navbar = () => {
                 <Link href="/" className="text-white hover:text-[#11A998] font-medium">Trang chủ</Link>
                 <Link href="/specialties" className="text-white hover:text-[#11A998] font-medium">Chuyên khoa</Link>
                 <Link href="/doctors" className="text-white hover:text-[#11A998] font-medium">Đội ngũ bác sĩ</Link>
-                <Link href="/" className="text-white hover:text-[#11A998] font-medium">Tuyển dụng</Link>
+                <Link href="/" className="text-white hover:text-[#11A998] font-medium">Chuyên khoa</Link>
                 <Link href="/" className="text-white hover:text-[#11A998] font-medium">Liên hệ</Link>
-                {(role === "admin" || role === "doctor") && (
-                    <Link href="/management" className="text-white hover:text-[#11A998] font-medium">Quản lý</Link>
+                {role === "admin" && (
+                    <Link
+                        href="/management/dashboard"
+                        className="text-white hover:text-[#11A998] font-medium"
+                    >
+                        Quản lý
+                    </Link>
+                )}
+
+                {role === "doctor" && (
+                    <Link
+                        href="/management/completePatients"
+                        className="text-white hover:text-[#11A998] font-medium"
+                    >
+                        Quản lý
+                    </Link>
                 )}
             </div>
             <div className="flex items-center space-x-6">

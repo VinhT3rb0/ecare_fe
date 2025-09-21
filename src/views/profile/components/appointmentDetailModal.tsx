@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
-import { Modal, Descriptions, Spin, Tag, List, Divider, Card, Empty } from "antd";
+import React, { useState } from "react";
+import { Modal, Descriptions, Spin, Tag, List, Divider, Card, Empty, Button } from "antd";
 import { LoadingOutlined, MedicineBoxOutlined, FileTextOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useGetMedicalRecordsQuery } from "@/api/app_medical_record/apiMedicalRecord";
+import ReviewModal from "./reviewModal";
 
 interface AppointmentDetailModalProps {
     open: boolean;
@@ -25,7 +26,7 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
         { appointment_id: appointment?.id },
         { skip: !appointment?.id }
     );
-
+    const [reviewOpen, setReviewOpen] = useState(false);
     const medicalRecord = Array.isArray(medicalRecordData?.data)
         ? medicalRecordData?.data[0]
         : medicalRecordData?.data;
@@ -65,6 +66,20 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
                         </Descriptions.Item>
                         <Descriptions.Item label="Khung giờ">
                             {appointment?.time_slot}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Bác sĩ khám">
+                            <div className="flex items-center gap-2">
+                                {appointment?.Doctor?.full_name}
+                                {appointment?.status === "completed" && (
+                                    <Button
+                                        size="small"
+                                        style={{ background: "#11A998", borderColor: "#11A998", color: "white" }}
+                                        onClick={() => setReviewOpen(true)}
+                                    >
+                                        Đánh giá
+                                    </Button>
+                                )}
+                            </div>
                         </Descriptions.Item>
                         <Descriptions.Item label="Lý do khám">
                             {appointment?.reason || "-"}
@@ -143,6 +158,10 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
                                 ) : (
                                     <Empty description="Không có dịch vụ" />
                                 )}
+                                <ReviewModal open={reviewOpen}
+                                    onClose={() => setReviewOpen(false)}
+                                    doctorId={appointment?.doctor_id}
+                                    patientId={appointment?.patient_id} />
                             </>
                         ) : (
                             <Empty description="Chưa có hồ sơ bệnh án" />

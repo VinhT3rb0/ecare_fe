@@ -2,16 +2,17 @@
 
 import { useParams } from "next/navigation";
 import { Button, Spin, Typography, message, Descriptions, Tag, Table, Card, Divider } from "antd";
-import { useCreateMomoPaymentMutation } from "@/api/app_payment/apiPayment";
+import { useCreateMomoPaymentMutation, useCreateCashPaymentMutation } from "@/api/app_payment/apiPayment";
 import { useGetInvoiceByIdQuery, useUpdateInvoiceMutation } from "@/api/app_invoice/apiInvoice";
 
-export default function MomoPaymentPage() {
+export default function PaymentPage() {
     const { invoiceId } = useParams<{ invoiceId: string }>();
-    const [createMomoPayment, { isLoading: isCreating }] = useCreateMomoPaymentMutation();
+    const [createMomoPayment, { isLoading: isCreatingMomo }] = useCreateMomoPaymentMutation();
+    const [createCashPayment, { isLoading: isCreatingCash }] = useCreateCashPaymentMutation();
     const [updateInvoice] = useUpdateInvoiceMutation();
     const { data, error, isLoading: isInvoiceLoading } = useGetInvoiceByIdQuery(invoiceId);
     const invoice = data?.data;
-    const handlePay = async () => {
+    const handleMomoPay = async () => {
         try {
             await updateInvoice({ id: Number(invoiceId), payment_method: "Momo" }).unwrap();
             const totalAmount = totalAll + medsTotal;
@@ -22,7 +23,18 @@ export default function MomoPaymentPage() {
                 message.error("Không tạo được link thanh toán MoMo");
             }
         } catch (err: any) {
-            message.error(err?.data?.message || "Thanh toán thất bại");
+            message.error(err?.data?.message || "Thanh toán MoMo thất bại");
+        }
+    };
+
+    const handleCashPay = async () => {
+        try {
+            const res = await createCashPayment({ invoice_id: Number(invoiceId) }).unwrap();
+            message.success("Thanh toán tiền mặt thành công!");
+            // Reload trang để cập nhật trạng thái
+            window.location.reload();
+        } catch (err: any) {
+            message.error(err?.data?.message || "Thanh toán tiền mặt thất bại");
         }
     };
 
@@ -99,11 +111,14 @@ export default function MomoPaymentPage() {
     return (
         <div style={{ padding: 24, maxWidth: 1000, margin: '0 auto' }}>
             <Card>
+                <Typography.Title level={2} style={{ textAlign: 'center', marginBottom: 24 }}>
+                    💳 Thanh toán hóa đơn #{invoiceId}
+                </Typography.Title>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
                     <Tag color={statusColor} style={{ fontSize: 14, padding: '4px 8px' }}>
                         {invoice.status === 'paid' ? 'Đã thanh toán' : invoice.status === 'unpaid' ? 'Chưa thanh toán' : invoice.status}
                     </Tag>
-                    <Typography.Text strong>
+                    <Typography.Text strong style={{ fontSize: 16 }}>
                         Tổng tiền: {(totalAll + medsTotal).toLocaleString('vi-VN')} đ
                     </Typography.Text>
                 </div>
@@ -182,28 +197,46 @@ export default function MomoPaymentPage() {
                 />
 
                 <div style={{ textAlign: 'center', marginTop: 32 }}>
-                    <Spin spinning={isCreating}>
-                        <Button
-                            type="primary"
-                            size="large"
-                            onClick={handlePay}
-                            style={{
-                                height: 48,
-                                width: 200,
-                                fontSize: 16,
-                                fontWeight: 'bold',
-                                backgroundColor: '#1890ff'
-                            }}
-                            disabled={invoice.status === 'paid'}
-                        >
-                            {invoice.status === 'paid' ? 'Đã thanh toán' : 'Thanh toán MoMo'}
-                        </Button>
-                    </Spin>
-                    {invoice.status === 'paid' && (
-                        <div style={{ marginTop: 16 }}>
-                            <Typography.Text type="success">
-                                Hóa đơn này đã được thanh toán
+                    {invoice.status === 'paid' ? (
+                        <div>
+                            <Typography.Text type="success" style={{ fontSize: 16 }}>
+                                ✅ Hóa đơn này đã được thanh toán bằng {invoice.payment_method}
                             </Typography.Text>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+                            <Spin spinning={isCreatingMomo}>
+                                <Button
+                                    type="primary"
+                                    size="large"
+                                    onClick={handleMomoPay}
+                                    style={{
+                                        height: 48,
+                                        minWidth: 180,
+                                        fontSize: 16,
+                                        fontWeight: 'bold',
+                                        backgroundColor: '#E91E63'
+                                    }}
+                                >
+                                    💳 Thanh toán MoMo
+                                </Button>
+                            </Spin>
+                            <Spin spinning={isCreatingCash}>
+                                <Button
+                                    type="primary"
+                                    size="large"
+                                    onClick={handleCashPay}
+                                    style={{
+                                        height: 48,
+                                        minWidth: 180,
+                                        fontSize: 16,
+                                        fontWeight: 'bold',
+                                        backgroundColor: '#52C41A'
+                                    }}
+                                >
+                                    💵 Thanh toán tiền mặt
+                                </Button>
+                            </Spin>
                         </div>
                     )}
                 </div>

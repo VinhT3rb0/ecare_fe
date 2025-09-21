@@ -43,7 +43,10 @@ export const apiMedicine = createApi({
             query: (id) => `/${id}`,
             providesTags: (_result, _error, id) => [{ type: "Medicine", id }],
         }),
-        updateMedicineStock: builder.mutation<any, { invoiceId: number }>({
+        updateMedicineStock: builder.mutation<
+            any,
+            { medications: { medicine_id: number; quantity: number; action: "import" | "export" }[] }
+        >({
             query: (body) => ({
                 url: `/update-stock`,
                 method: "POST",

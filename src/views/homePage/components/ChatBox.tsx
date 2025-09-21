@@ -74,7 +74,15 @@ const ChatBox: React.FC = () => {
         setTimeout(() => scrollToBottom(), 50);
     }, [conversationData]);
 
-    // socket receive
+    useEffect(() => {
+        const handleOpen = () => {
+            setVisible(true);
+            setMinimized(false);
+            setHasUnread(false);
+        };
+        window.addEventListener("openChatBox", handleOpen);
+        return () => window.removeEventListener("openChatBox", handleOpen);
+    }, []);
     useEffect(() => {
         if (!idUser) return;
         const role = getCookie("role") || "patient";

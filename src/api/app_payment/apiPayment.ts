@@ -20,9 +20,12 @@ export const apiPayment = createApi({
         momoReturn: builder.query<any, Record<string, string>>({
             query: (params) => ({ url: "/momo/return", method: 'GET', params }),
         }),
+        createCashPayment: builder.mutation<{ message: string; data: { invoice_id: number } }, { invoice_id: number }>({
+            query: (body) => ({ url: "/cash/create", method: "POST", body }),
+        }),
     }),
 });
 
-export const { useCreateMomoPaymentMutation, useMomoReturnQuery } = apiPayment;
+export const { useCreateMomoPaymentMutation, useMomoReturnQuery, useCreateCashPaymentMutation } = apiPayment;
 
 

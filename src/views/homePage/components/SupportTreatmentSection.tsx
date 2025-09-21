@@ -59,7 +59,7 @@ const SupportTreatmentSection: React.FC<SupportTreatmentSectionProps> = ({
                         className="mt-4 inline-block px-6 py-2 border border-blue-800 text-blue-800 font-medium rounded-full hover:bg-blue-800 hover:!text-white transition"
                         onClick={() => window.location.href = '/contact'}
                     >
-                        Liên hệ đặt lịch
+                        Liên hệ
                     </button>
                 </motion.div>
 

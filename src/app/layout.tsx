@@ -7,8 +7,6 @@ import { Metadata } from "next";
 import StoreProvider from "./StoreProvider";
 import AntdConfigProvider from "./AntdConfigProvider";
 import { Toaster } from "react-hot-toast";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 const RootLayout = ({ children }: React.PropsWithChildren) => (
   <html lang="vi">
     <body>

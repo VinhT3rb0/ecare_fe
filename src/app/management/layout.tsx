@@ -16,6 +16,7 @@ import {
     ScheduleOutlined,
     DatabaseOutlined,
     FileTextOutlined,
+    ContainerOutlined,
 } from "@ant-design/icons";
 import { usePathname, useRouter } from "next/navigation";
 import { getCookie } from "cookies-next";
@@ -59,6 +60,12 @@ const ManagementLayout: React.FC<ManagementLayoutProps> = ({ children }) => {
                     onClick: () => router.push("/management/users"),
                 },
                 {
+                    key: "invoices",
+                    icon: <ContainerOutlined />,
+                    label: "Quản lý hóa đơn",
+                    onClick: () => router.push("/management/invoiceManage"),
+                },
+                {
                     key: "packages",
                     icon: <AccountBookOutlined />,
                     label: "Dịch vụ điều trị",
@@ -100,7 +107,7 @@ const ManagementLayout: React.FC<ManagementLayoutProps> = ({ children }) => {
                     key: "patient-list",
                     icon: <ScheduleOutlined />,
                     label: "Danh sách bệnh nhân",
-                    onClick: () => router.push("/management/doctor"),
+                    onClick: () => router.push("/management/completePatients"),
                 },
                 {
                     key: "doctor-appointments",

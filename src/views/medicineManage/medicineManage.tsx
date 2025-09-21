@@ -12,6 +12,8 @@ import {
     Popconfirm,
 } from "antd";
 import { useCreateMedicineMutation, useDeleteMedicineMutation, useGetMedicinesQuery, useUpdateMedicineMutation } from "@/api/app_medicine/apiMedicine";
+import StockAdjustModal from "./components/StockAdjustModal";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
 
 export default function MedicineManagement() {
@@ -29,7 +31,8 @@ export default function MedicineManagement() {
     const [form] = Form.useForm();
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<any>(null);
-
+    const [stockModalOpen, setStockModalOpen] = useState(false);
+    const [selectedMedicine, setSelectedMedicine] = useState<any>(null);
     const onFinish = async (values: any) => {
         try {
             if (editing) {
@@ -46,6 +49,7 @@ export default function MedicineManagement() {
 
     const columns = [
         { title: "Tên thuốc", dataIndex: "name" },
+        { title: "Công dụng", dataIndex: "description" },
         { title: "Đơn vị", dataIndex: "unit" },
         {
             title: "Giá",
@@ -55,7 +59,6 @@ export default function MedicineManagement() {
         { title: "Tồn kho", dataIndex: "stock_quantity" },
         { title: "Hãng SX", dataIndex: "manufacturer" },
         {
-            title: "Hành động",
             render: (_: any, record: any) => (
                 <Space>
                     <Button
@@ -65,13 +68,21 @@ export default function MedicineManagement() {
                             setOpen(true);
                         }}
                     >
-                        Sửa
+                        <EditOutlined />
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            setSelectedMedicine(record);
+                            setStockModalOpen(true);
+                        }}
+                    >
+                        +
                     </Button>
                     <Popconfirm
                         title="Xoá thuốc?"
                         onConfirm={() => deleteMedicine(record.id)}
                     >
-                        <Button danger>Xoá</Button>
+                        <Button danger><DeleteOutlined /></Button>
                     </Popconfirm>
                 </Space>
             ),
@@ -150,7 +161,11 @@ export default function MedicineManagement() {
                     </Form.Item>
                 </Form>
             </Modal>
-
+            <StockAdjustModal
+                open={stockModalOpen}
+                onClose={() => setStockModalOpen(false)}
+                medicine={selectedMedicine}
+            />
         </div>
     );
 }

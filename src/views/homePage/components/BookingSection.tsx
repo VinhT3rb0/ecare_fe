@@ -146,7 +146,7 @@ const BookingQASection: React.FC<BookingQASectionProps> = ({ bookingImage, qaIma
                                     fontWeight: "bold",
                                     boxShadow: "0 6px 15px rgba(0,0,0,0.3)",
                                 }}
-                                onClick={() => alert("Đi tới phần Hỏi đáp")}
+                                onClick={() => window.dispatchEvent(new Event("openChatBox"))}
                             >
                                 HỎI ĐÁP NGAY
                             </Button>
