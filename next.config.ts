@@ -9,8 +9,4 @@ module.exports = withAntdLess({
   devIndicators: {
     buildActivity: false,
   },
-  lessVarsFilePath: "./src/styles/antd-theme.less",
-  modifyVars: {
-    "@primary-color": "#11A998",
-  },
 });
