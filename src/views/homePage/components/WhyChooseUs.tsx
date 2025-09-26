@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Stethoscope, HeartPulse, BriefcaseMedical, Globe } from "lucide-react";
+import Link from "next/link";
 
 const features = [
     {
@@ -45,14 +46,16 @@ export default function WhyChooseUs() {
                         giữa chăm sóc sức khỏe hiện đại và dịch vụ tiêu chuẩn khách sạn 5*, mang đến cho khách hàng trải nghiệm y tế
                         toàn diện, an tâm và đẳng cấp.
                     </p>
-                    <motion.button
-                        style={{ color: "#fff" }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="px-6 py-3 bg-[#11A998] font-medium rounded-full shadow-md hover:bg-[#0A3A67] transition"
-                    >
-                        Xem tất cả dịch vụ
-                    </motion.button>
+                    <Link href="/services">
+                        <motion.button
+                            style={{ color: "#fff" }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-6 py-3 bg-[#11A998] font-medium rounded-full shadow-md hover:bg-[#0A3A67] transition"
+                        >
+                            Xem tất cả dịch vụ
+                        </motion.button>
+                    </Link>
                 </motion.div>
 
                 {/* Right */}

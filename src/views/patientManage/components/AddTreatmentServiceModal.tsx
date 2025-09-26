@@ -5,6 +5,7 @@ import { Modal, Form, Select, InputNumber } from "antd";
 import { useGetPackagesByDepartmentQuery } from "@/api/app_package/apiPackage";
 import { useAddPackageToInvoiceMutation, useCreateInvoiceMutation, useGetInvoiceByAppointmentQuery } from "@/api/app_invoice/apiInvoice";
 import toast from "react-hot-toast";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 type Props = {
     open: boolean;
@@ -15,8 +16,13 @@ type Props = {
 
 export default function AddTreatmentServiceModal({ open, onClose, appointment, invoice }: Props) {
     const [form] = Form.useForm();
-    const departmentId = appointment?.Department?.id || appointment?.department_id;
-    const { data: packagesResp, isFetching: isFetchingPkgs } = useGetPackagesByDepartmentQuery(departmentId?.toString() ?? "", { skip: !departmentId });
+    const departmentId = appointment?.Department?.id;
+    console.log(departmentId);
+
+    const { data: packagesResp, isFetching: isFetchingPkgs } =
+        useGetPackagesByDepartmentQuery(
+            departmentId ? { departmentId } : skipToken
+        );
     const [addPackageToInvoice, { isLoading: isAdding }] = useAddPackageToInvoiceMutation();
     const [createInvoice] = useCreateInvoiceMutation();
 

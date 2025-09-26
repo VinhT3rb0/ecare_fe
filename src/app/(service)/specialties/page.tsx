@@ -21,7 +21,7 @@ function Departments() {
             />
             <ServicesSection />
             <StrengthSection />
-            {role === 'patient' && <ChatBox />}
+            {(role === 'patient' || !role) && <ChatBox />}
             <Footer />
         </>
     )

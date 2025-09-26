@@ -29,7 +29,7 @@ export const apiPackage = createApi({
                     if (params.name) searchParams.append("name", params.name);
                     queryString = `?${searchParams.toString()}`;
                 }
-                return `/${queryString}`;
+                return `/${queryString}`
             },
             providesTags: [{ type: "Package" }],
         }),
@@ -38,7 +38,7 @@ export const apiPackage = createApi({
             providesTags: (result, error, id) => [{ type: "Package", id }],
         }),
         getPackagesByDepartment: builder.query<any, { departmentId: string | number; page?: number; limit?: number; name?: string }>({
-            query: ({ departmentId, ...params }) => ({ url: `department/${departmentId}`, params }),
+            query: ({ departmentId, ...params }) => ({ url: `department/${departmentId}`, params, headers: {} }),
             providesTags: (result, error, { departmentId }) => [{ type: "Package", id: `department-${departmentId}` }],
         }),
         createPackage: builder.mutation<any, any>({
