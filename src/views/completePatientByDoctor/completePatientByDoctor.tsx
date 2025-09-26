@@ -59,7 +59,7 @@ const CompletedPatientsAppointments: React.FC = () => {
             key: "status",
             render: (status: string) => (
                 <Tag color={statusColors[status] || "default"}>
-                    {status.toUpperCase()}
+                    {status === "completed" ? "Đã hoàn thành" : status.toUpperCase()}
                 </Tag>
             ),
         },

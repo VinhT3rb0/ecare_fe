@@ -173,26 +173,47 @@ const SchedulesDoctor: React.FC = () => {
                     const label = `${(sch.start_time || DEFAULT_START).slice(0, 5)} - ${(sch.end_time || DEFAULT_END).slice(0, 5)}`;
 
                     return (
-                        <div key={sch.id} style={{ marginBottom: 4 }}>
+                        <div key={sch.id} style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
                             <Tooltip
                                 title={
                                     <div style={{ textAlign: 'left' }}>
-                                        <div style={{ fontWeight: 600 }}>{label}</div>
-                                        <div>Phòng: {sch.Room?.name || 'N/A'}</div>
+                                        <div style={{ fontWeight: 700 }}>{label}</div>
+                                        <div style={{ marginTop: 6 }}>Phòng: {sch.Room?.name || 'N/A'}</div>
                                         <div>Giờ: {(sch.start_time || DEFAULT_START).slice(0, 5)} - {(sch.end_time || DEFAULT_END).slice(0, 5)}</div>
                                         <div>Trạng thái: {sch.status}</div>
                                     </div>
                                 }
                             >
-                                <Badge
-                                    style={{ cursor: 'pointer' }}
-                                    status={statusToDot as any}
+                                <div
                                     onClick={() => {
                                         setSelectedSchedule(sch);
                                         setDetailVisible(true);
                                     }}
-                                />
-                                <span style={{ marginLeft: 6, fontSize: 12 }}>{label}</span>
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 8,
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    <Badge color={
+                                        statusToDot === 'processing' ? '#13c2c2'
+                                            : statusToDot === 'success' ? '#52c41a'
+                                                : statusToDot === 'warning' ? '#fa8c16'
+                                                    : statusToDot === 'error' ? '#ff4d4f'
+                                                        : '#d9d9d9'
+                                    } />
+                                    <div style={{
+                                        fontSize: 12,
+                                        background: 'rgba(17,169,152,0.06)',
+                                        padding: '4px 8px',
+                                        borderRadius: 6,
+                                        color: '#0b5b51',
+                                        fontWeight: 600,
+                                    }}>
+                                        {label}
+                                    </div>
+                                </div>
                             </Tooltip>
                         </div>
                     );
@@ -208,13 +229,14 @@ const SchedulesDoctor: React.FC = () => {
             key: 'date',
             render: (d: string) => dayjs(d).format('DD/MM/YYYY'),
             sorter: (a: DoctorSchedule, b: DoctorSchedule) => dayjs(a.date).unix() - dayjs(b.date).unix(),
+            width: 140,
         },
         {
             title: 'Thời gian',
             key: 'time',
             render: (record: DoctorSchedule) => (
                 <div>
-                    <div>
+                    <div style={{ fontWeight: 600 }}>
                         {(record.start_time || DEFAULT_START).slice(0, 5)} - {(record.end_time || DEFAULT_END).slice(0, 5)}
                     </div>
                     <Text type="secondary" style={{ fontSize: 12 }}>
@@ -222,6 +244,7 @@ const SchedulesDoctor: React.FC = () => {
                     </Text>
                 </div>
             ),
+            width: 180,
         },
         {
             title: 'Phòng',
@@ -229,12 +252,13 @@ const SchedulesDoctor: React.FC = () => {
             key: 'room',
             render: (roomName: string, record: DoctorSchedule) => (
                 <div>
-                    <div>{roomName || 'N/A'}</div>
+                    <div style={{ fontWeight: 600 }}>{roomName || 'N/A'}</div>
                     <Text type="secondary" style={{ fontSize: 12 }}>
                         Tầng {record.Room?.floor ?? 'N/A'}
                     </Text>
                 </div>
             ),
+            width: 180,
         },
         {
             title: 'Trạng thái',
@@ -251,8 +275,9 @@ const SchedulesDoctor: React.FC = () => {
                     cancelled: { color: 'magenta', text: 'Đã hủy' },
                 } as const;
                 const cfg = statusConfig[status as keyof typeof statusConfig];
-                return <Tag color={cfg?.color}>{cfg?.text || status}</Tag>;
+                return <Tag color={cfg?.color} style={{ fontWeight: 600 }}>{cfg?.text || status}</Tag>;
             },
+            width: 140,
         },
         {
             title: 'Thao tác',
@@ -270,6 +295,7 @@ const SchedulesDoctor: React.FC = () => {
                             onClick={() => handleCheckIn(record.id)}
                             loading={isCheckingIn}
                             disabled={!canCheckIn}
+                            style={{ borderRadius: 8 }}
                         >
                             Check-in
                         </Button>
@@ -279,12 +305,20 @@ const SchedulesDoctor: React.FC = () => {
                             onClick={() => handleCheckOut(record.id)}
                             loading={isCheckingOut}
                             disabled={!canCheckOut}
+                            style={{ borderRadius: 8 }}
                         >
                             Check-out
+                        </Button>
+                        <Button
+                            size="small"
+                            onClick={() => { setSelectedSchedule(record); setDetailVisible(true); }}
+                        >
+                            Chi tiết
                         </Button>
                     </Space>
                 );
             },
+            width: 240,
         },
     ];
 
@@ -293,30 +327,66 @@ const SchedulesDoctor: React.FC = () => {
             <div style={{ padding: 24 }}>
                 {/* Statistics */}
                 <Row gutter={16} style={{ marginBottom: 24 }}>
-                    <Col span={6}>
-                        <Card>
-                            <Statistic title="Tổng lịch làm việc" value={stats.total} prefix={<CalendarOutlined />} />
+                    <Col xs={24} sm={12} md={6}>
+                        <Card style={{
+                            borderRadius: 12,
+                            boxShadow: '0 6px 18px rgba(0,0,0,0.06)',
+                            border: '1px solid rgba(17,169,152,0.08)',
+                            background: 'linear-gradient(180deg, rgba(17,169,152,0.07), #fff)',
+                        }}>
+                            <Statistic
+                                title="Tổng lịch làm việc"
+                                value={stats.total}
+                                prefix={<CalendarOutlined style={{ color: '#0aa287' }} />}
+                            />
                         </Card>
                     </Col>
-                    <Col span={6}>
-                        <Card>
-                            <Statistic title=" " value=" " />
+                    <Col xs={24} sm={12} md={6}>
+                        <Card style={{
+                            borderRadius: 12,
+                            boxShadow: '0 6px 18px rgba(0,0,0,0.04)',
+                            border: '1px solid rgba(0,0,0,0.04)',
+                            background: '#fff',
+                            minHeight: 72,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <Text type="secondary"> </Text>
                         </Card>
                     </Col>
-                    <Col span={6}>
-                        <Card>
-                            <Statistic title=" " value=" " />
+                    <Col xs={24} sm={12} md={6}>
+                        <Card style={{
+                            borderRadius: 12,
+                            boxShadow: '0 6px 18px rgba(0,0,0,0.04)',
+                            border: '1px solid rgba(0,0,0,0.04)',
+                            background: '#fff',
+                            minHeight: 72,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <Text type="secondary"> </Text>
                         </Card>
                     </Col>
-                    <Col span={6}>
-                        <Card>
-                            <Statistic title=" " value=" " />
+                    <Col xs={24} sm={12} md={6}>
+                        <Card style={{
+                            borderRadius: 12,
+                            boxShadow: '0 6px 18px rgba(0,0,0,0.04)',
+                            border: '1px solid rgba(0,0,0,0.04)',
+                            background: '#fff',
+                            minHeight: 72,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <Text type="secondary"> </Text>
                         </Card>
                     </Col>
                 </Row>
 
                 {/* Filters */}
-                <Card style={{ marginBottom: 24 }}>
+                <Card style={{ marginBottom: 24, borderRadius: 12, boxShadow: '0 6px 18px rgba(0,0,0,0.04)' }}>
                     <Row gutter={16} align="middle">
                         <Col>
                             <Text strong>Bộ lọc:</Text>
@@ -337,6 +407,7 @@ const SchedulesDoctor: React.FC = () => {
                                         setFilterDateRange(null);
                                         refetch();
                                     }}
+                                    style={{ borderRadius: 8 }}
                                 >
                                     Làm mới
                                 </Button>
@@ -344,6 +415,7 @@ const SchedulesDoctor: React.FC = () => {
                                     onClick={() => {
                                         refetch();
                                     }}
+                                    style={{ borderRadius: 8 }}
                                 >
                                     Lấy lại
                                 </Button>
@@ -353,31 +425,36 @@ const SchedulesDoctor: React.FC = () => {
                 </Card>
 
                 {/* Calendar */}
-                <Card title="Xem lịch" style={{ marginBottom: 24 }}>
+                <Card title="Xem lịch" style={{ marginBottom: 24, borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
                     <Calendar
                         value={selectedDate}
                         onChange={(val) => setSelectedDate(val)}
                         dateCellRender={getCalendarCellContent}
                         headerRender={({ value, onChange }) => (
-                            <div style={{ padding: '8px 0' }}>
-                                <Space>
-                                    <Button size="small" onClick={() => onChange(value.clone().subtract(1, 'month'))}>
-                                        Tháng trước
-                                    </Button>
-                                    <Button size="small" onClick={() => onChange(dayjs())}>
-                                        Hôm nay
-                                    </Button>
-                                    <Button size="small" onClick={() => onChange(value.clone().add(1, 'month'))}>
-                                        Tháng sau
-                                    </Button>
-                                </Space>
+                            <div style={{ padding: '8px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <Space>
+                                        <Button size="small" onClick={() => onChange(value.clone().subtract(1, 'month'))} style={{ borderRadius: 6 }}>
+                                            Tháng trước
+                                        </Button>
+                                        <Button size="small" onClick={() => onChange(dayjs())} style={{ borderRadius: 6 }}>
+                                            Hôm nay
+                                        </Button>
+                                        <Button size="small" onClick={() => onChange(value.clone().add(1, 'month'))} style={{ borderRadius: 6 }}>
+                                            Tháng sau
+                                        </Button>
+                                    </Space>
+                                </div>
+                                <div style={{ fontWeight: 700 }}>
+                                    <Text>{value.format('MMMM YYYY')}</Text>
+                                </div>
                             </div>
                         )}
                     />
                 </Card>
 
                 {/* Table */}
-                <Card title="Danh sách lịch làm việc">
+                <Card title="Danh sách lịch làm việc" style={{ borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
                     <Table
                         columns={columns}
                         dataSource={schedules}
@@ -390,6 +467,8 @@ const SchedulesDoctor: React.FC = () => {
                             showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} lịch làm việc`,
                         }}
                         scroll={{ x: '100%', y: 480 }}
+                        rowClassName={() => 'hover:bg-white/30'}
+                        style={{ borderRadius: 12, overflow: 'hidden' }}
                     />
                 </Card>
 

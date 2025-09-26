@@ -34,6 +34,7 @@ import {
     useGetReviewsByDoctorQuery,
 } from "@/api/app_review/apiReview";
 import RelatedDoctors from "@/components/RelatedDoctors/RelatedDoctors";
+import { useGetAccountQuery } from "@/api/app_home/apiAccount";
 
 const { Paragraph, Text } = Typography;
 
@@ -42,6 +43,7 @@ export default function DoctorDetailPage() {
     const { data: doctor, isLoading } = useGetMyDoctorQuery(id as string, {
         skip: !id,
     });
+    const { data: user } = useGetAccountQuery();
 
     const [form] = Form.useForm();
     const [createReview, { isLoading: creating }] = useCreateReviewMutation();
@@ -67,7 +69,7 @@ export default function DoctorDetailPage() {
             const values = await form.validateFields();
             await createReview({
                 doctor_id: doctor.id,
-                patient_id: 1,
+                patient_id: user?.data?.id,
                 rating: values.rating,
                 comment: values.comment,
             }).unwrap();

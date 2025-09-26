@@ -38,7 +38,7 @@ const CustomCarousel: React.FC = () => (
                             href="/signin"
                             className="inline-block px-6 py-2 !bg-teal-600 !text-white font-semibold rounded-full shadow-lg hover:!bg-teal-700 transition"
                         >
-                            Đăng ký trải nghiệm
+                            Đặt lịch khám ngay
                         </a>
                     </div>
                 </div>

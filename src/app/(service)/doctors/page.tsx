@@ -40,6 +40,7 @@ export default function DoctorDirectoryPage() {
     return (
         <>
             <Navbar />
+            <div className="h-20" />
             <DoctorBanner />
             <section className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-4 gap-6">
                 {/* Sidebar trái: Departments */}
@@ -110,7 +111,7 @@ export default function DoctorDirectoryPage() {
                                         <Link href={`/doctors/${doc.user_id}`}>
                                             <Card
                                                 hoverable
-                                                className="rounded-xl shadow-md overflow-hidden"
+                                                className="rounded-xl shadow-md overflow-hidden h-full"
                                                 cover={
                                                     <Image
                                                         src={
@@ -119,21 +120,22 @@ export default function DoctorDirectoryPage() {
                                                         }
                                                         alt={doc.full_name}
                                                         width={300}
-                                                        height={350}
+                                                        height={300}
                                                         className="object-cover w-full h-80"
                                                     />
                                                 }
                                             >
-                                                <h3 className="font-semibold text-lg text-green-900">
-                                                    <span>{doc.education_level} - </span>
-                                                    {doc.full_name}
-                                                </h3>
-
-                                                <p className="text-gray-500 text-xs">
-                                                    {doc.departments
-                                                        ?.map((d: any) => d.name)
-                                                        .join(", ")}
-                                                </p>
+                                                <div className="flex flex-col justify-between h-32">
+                                                    <h3 className="font-semibold text-lg text-green-900 line-clamp-2 min-h-[3rem]">
+                                                        <span>{doc.education_level} - </span>
+                                                        {doc.full_name}
+                                                    </h3>
+                                                    <p className="text-gray-500 text-xs truncate">
+                                                        {doc.departments
+                                                            ?.map((d: any) => d.name)
+                                                            .join(", ")}
+                                                    </p>
+                                                </div>
                                             </Card>
                                         </Link>
                                     </motion.div>

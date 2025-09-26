@@ -89,7 +89,7 @@ export const apiReview = createApi({
 
         // Top bác sĩ có rating cao
         getTopDoctorsByRating: builder.query<
-            { doctor_id: number; avgRating: number; reviewCount: number }[],
+            { data: { doctor_id: number; doctor_name: string; doctor_avatar: string; avg_rating: string; total_reviews: number }[] },
             { from?: string; to?: string; limit?: number }
         >({
             query: (params) => ({

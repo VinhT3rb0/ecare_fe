@@ -2,9 +2,12 @@
 const withAntdLess = require("next-plugin-antd-less");
 
 module.exports = withAntdLess({
-  reactStrictMode: true,
+  reactStrictMode: false,
   images: {
     domains: ["res.cloudinary.com"],
+  },
+  devIndicators: {
+    buildActivity: false,
   },
   lessVarsFilePath: "./src/styles/antd-theme.less",
   modifyVars: {

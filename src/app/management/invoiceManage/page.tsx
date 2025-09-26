@@ -110,44 +110,15 @@ export default function InvoiceManagePage() {
             title: "Tổng tiền",
             key: "total_amount",
             render: (record: any) => {
-                // Calculate total amount from packages and medicines
-                const packageTotal = (record.invoicePackages || []).reduce((sum: number, ip: any) => {
-                    const price = Number(ip.price);
-                    const discount = Number(ip.package?.discount || 0);
-                    const insurancePay = record.has_insurance ? (price * discount / 100) * ip.quantity : 0;
-                    const gross = price * ip.quantity;
-                    return sum + (gross - insurancePay);
-                }, 0);
-
-                const medicineTotal = (record.invoiceMedicines || []).reduce((sum: number, im: any) => {
-                    return sum + (Number(im.price) * Number(im.quantity || 0));
-                }, 0);
-
+                const total = Number(record.total_amount || 0);
                 return (
                     <div style={{ fontWeight: 500, color: "#1890ff" }}>
-                        {(packageTotal + medicineTotal).toLocaleString('vi-VN')} đ
+                        {total.toLocaleString('vi-VN')} đ
                     </div>
                 );
             },
             width: 150,
-            sorter: (a: any, b: any) => {
-                const getTotal = (record: any) => {
-                    const packageTotal = (record.invoicePackages || []).reduce((sum: number, ip: any) => {
-                        const price = Number(ip.price);
-                        const discount = Number(ip.package?.discount || 0);
-                        const insurancePay = record.has_insurance ? (price * discount / 100) * ip.quantity : 0;
-                        const gross = price * ip.quantity;
-                        return sum + (gross - insurancePay);
-                    }, 0);
-
-                    const medicineTotal = (record.invoiceMedicines || []).reduce((sum: number, im: any) => {
-                        return sum + (Number(im.price) * Number(im.quantity || 0));
-                    }, 0);
-
-                    return packageTotal + medicineTotal;
-                };
-                return getTotal(a) - getTotal(b);
-            },
+            sorter: (a: any, b: any) => Number(a.total_amount || 0) - Number(b.total_amount || 0),
         },
         {
             title: "Trạng thái",
@@ -336,21 +307,10 @@ export default function InvoiceManagePage() {
                             <Card size="small">
                                 <div style={{ textAlign: 'center' }}>
                                     <div style={{ fontSize: 24, fontWeight: 'bold', color: '#722ED1' }}>
-                                        {invoices.reduce((sum: number, inv: any) => {
-                                            const packageTotal = (inv.invoicePackages || []).reduce((pSum: number, ip: any) => {
-                                                const price = Number(ip.price);
-                                                const discount = Number(ip.package?.discount || 0);
-                                                const insurancePay = inv.has_insurance ? (price * discount / 100) * ip.quantity : 0;
-                                                const gross = price * ip.quantity;
-                                                return pSum + (gross - insurancePay);
-                                            }, 0);
-
-                                            const medicineTotal = (inv.invoiceMedicines || []).reduce((mSum: number, im: any) => {
-                                                return mSum + (Number(im.price) * Number(im.quantity || 0));
-                                            }, 0);
-
-                                            return sum + packageTotal + medicineTotal;
-                                        }, 0).toLocaleString('vi-VN')} đ
+                                        {invoices
+                                            .filter((inv: any) => inv.status === 'paid')
+                                            .reduce((sum: number, inv: any) => sum + Number(inv.total_amount || 0), 0)
+                                            .toLocaleString('vi-VN')} đ
                                     </div>
                                     <div>Tổng doanh thu</div>
                                 </div>

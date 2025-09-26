@@ -33,6 +33,19 @@ export const apiStats = createApi({
             query: (params = {}) => ({ url: `/top-services`, params }),
             providesTags: ["Stats"],
         }),
+        // Doctor-specific
+        getDoctorOverview: builder.query<any, { doctor_id?: number; from?: string; to?: string } | undefined>({
+            query: (params) => ({ url: `/doctor/overview`, params }),
+            providesTags: ["Stats"],
+        }),
+        getDoctorUpcoming: builder.query<any, { doctor_id?: number; limit?: number } | undefined>({
+            query: (params) => ({ url: `/doctor/upcoming`, params }),
+            providesTags: ["Stats"],
+        }),
+        getDoctorAppointmentsSeries: builder.query<any, { doctor_id?: number; from?: string; to?: string; granularity?: string } | undefined>({
+            query: (params) => ({ url: `/doctor/appointments-series`, params }),
+            providesTags: ["Stats"],
+        }),
     }),
 });
 
@@ -42,6 +55,9 @@ export const {
     useGetInvoicesSeriesQuery,
     useGetRevenueByDepartmentQuery,
     useGetTopServicesQuery,
+    useGetDoctorOverviewQuery,
+    useGetDoctorUpcomingQuery,
+    useGetDoctorAppointmentsSeriesQuery,
 } = apiStats;
 
 

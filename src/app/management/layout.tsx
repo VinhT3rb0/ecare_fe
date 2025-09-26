@@ -37,12 +37,27 @@ const ManagementLayout: React.FC<ManagementLayoutProps> = ({ children }) => {
     const getSelectedKey = () => {
         if (pathname.includes("/management/dashboard")) return "dashboard";
         if (pathname.includes("/management/users")) return "users";
+        if (pathname.includes("/management/invoiceManage")) return "invoices";
         if (pathname.includes("/management/packages")) return "packages";
-        if (pathname.includes("/management/appointments")) return "appointments";
-        if (pathname.includes("/management/settings")) return "settings";
         if (pathname.includes("/management/doctor")) return "doctor";
+        if (pathname.includes("/management/medicine")) return "medicine";
+        if (pathname.includes("/management/specialty")) return "specialty";
+        if (pathname.includes("/management/settings")) return "settings";
+        if (pathname.includes("/management/messages")) return "messages";
+
+        // Các route cho role bác sĩ
+        if (pathname.includes("/management/completePatients")) return "patient-list";
+        if (pathname.includes("/management/schedules")) return "doctor-appointments";
+        if (pathname.includes("/management/patientAppointments")) return "doctor-patients";
+        if (pathname.includes("/management/todayAppointment")) return "today-patients";
+        if (pathname.includes("/management/inTreatmentPatient")) return "intreatment-patients";
+        if (pathname.includes("/management/settings")) return "doctor-settings";
+        if (pathname.includes("/management/doctor-dashboard")) return "doctor-dashboard";
+
+        // fallback
         return "dashboard";
     };
+
 
     const menuItems =
         user === "admin"
@@ -103,6 +118,12 @@ const ManagementLayout: React.FC<ManagementLayoutProps> = ({ children }) => {
                 },
             ]
             : [
+                {
+                    key: "doctor-dashboard",
+                    icon: <DashboardOutlined />,
+                    label: "Tổng quan bác sĩ",
+                    onClick: () => router.push("/management/doctor-dashboard"),
+                },
                 {
                     key: "patient-list",
                     icon: <ScheduleOutlined />,
@@ -188,7 +209,7 @@ const ManagementLayout: React.FC<ManagementLayoutProps> = ({ children }) => {
                     <div className="p-4 border-b border-gray-200 flex items-center justify-between">
                         {!collapsed && (
                             <div className="flex-shrink-0">
-                                <Link href="/management">
+                                <Link href="/management/dashboard">
                                     <img
                                         src="/images/logoEcare.png"
                                         alt="Logo"

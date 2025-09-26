@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Row, Col, Card, Space, DatePicker, Select, Statistic, Typography, Divider } from "antd";
+import { Row, Col, Card, Space, DatePicker, Select, Statistic, Typography, Divider, List, Avatar, Rate, Tag } from "antd";
 import { ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
 import type { RangePickerProps } from "antd/es/date-picker";
 import dayjs, { Dayjs } from "dayjs";
@@ -9,11 +9,21 @@ import dayjs, { Dayjs } from "dayjs";
 // Using Ant Design Plots for charts
 import { Line, Column, Pie, Area } from "@ant-design/plots";
 import { useGetOverviewQuery, useGetRevenueSeriesQuery, useGetInvoicesSeriesQuery, useGetRevenueByDepartmentQuery, useGetTopServicesQuery } from "@/api/app_stats/apiStats";
+import { useGetTopDoctorsByRatingQuery } from "@/api/app_review/apiReview";
+
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
 
 type Period = "day" | "week" | "month" | "quarter" | "year";
+
+interface TopDoctor {
+    doctor_id: number;
+    doctor_name: string;
+    doctor_avatar: string;
+    avg_rating: string;
+    total_reviews: number;
+}
 
 // Mock data generators (replace with real API later)
 function generateTimeSeries(period: Period, from: Dayjs, to: Dayjs, key: string) {
@@ -59,11 +69,7 @@ export default function Dashboard() {
     const { data: invoicesData } = useGetInvoicesSeriesQuery({ ...params, granularity });
     const { data: deptData } = useGetRevenueByDepartmentQuery(params);
     const { data: topServices } = useGetTopServicesQuery({ ...params, limit: 6 });
-    const testRevenueData = [
-        { time: "2025-07", value: 1100000 },
-        { time: "2025-08", value: 13030000 },
-        { time: "2025-09", value: 14167480 }
-    ];
+    const { data: topDoctors } = useGetTopDoctorsByRatingQuery({ ...params, limit: 3 });
     const kpis = useMemo(() => {
         return {
             revenue: overview?.data?.revenue ?? 0,
@@ -81,6 +87,7 @@ export default function Dashboard() {
     const invoicesSeries = useMemo(() => invoicesData?.data ?? [], [invoicesData]);
     const departmentCategory = useMemo(() => deptData?.data ?? [], [deptData]);
     const servicesCategory = useMemo(() => topServices?.data ?? [], [topServices]);
+    const topDoctorsData = useMemo(() => (topDoctors?.data as TopDoctor[]) ?? [], [topDoctors]);
 
     return (
         <Space direction="vertical" size={16} style={{ width: "100%" }}>
@@ -190,6 +197,98 @@ export default function Dashboard() {
                     </Card>
                 </Col>
                 <Col xs={24} lg={10}>
+                    <Card
+                        title="Top bác sĩ được đánh giá cao"
+                        extra={<Text type="secondary">Top {topDoctorsData.length} bác sĩ</Text>}
+                    >
+                        <List
+                            dataSource={topDoctorsData}
+                            renderItem={(doctor: TopDoctor, index: number) => (
+                                <List.Item
+                                    style={{
+                                        padding: '12px 0',
+                                        borderBottom: index < topDoctorsData.length - 1 ? '1px solid #f0f0f0' : 'none'
+                                    }}
+                                >
+                                    <List.Item.Meta
+                                        avatar={
+                                            <div style={{ position: 'relative' }}>
+                                                <Avatar
+                                                    src={doctor.doctor_avatar}
+                                                    size={48}
+                                                    style={{
+                                                        border: index < 3 ? '3px solid' : '1px solid #d9d9d9',
+                                                        borderColor: index === 0 ? '#f56a00' : index === 1 ? '#87d068' : index === 2 ? '#2db7f5' : '#d9d9d9'
+                                                    }}
+                                                >
+                                                    {!doctor.doctor_avatar && doctor.doctor_name?.charAt(0)?.toUpperCase()}
+                                                </Avatar>
+                                                {index < 3 && (
+                                                    <div
+                                                        style={{
+                                                            position: 'absolute',
+                                                            top: -8,
+                                                            right: -8,
+                                                            width: 20,
+                                                            height: 20,
+                                                            borderRadius: '50%',
+                                                            backgroundColor: index === 0 ? '#f56a00' : index === 1 ? '#87d068' : '#2db7f5',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            color: 'white',
+                                                            fontSize: '12px',
+                                                            fontWeight: 'bold',
+                                                            border: '2px solid white'
+                                                        }}
+                                                    >
+                                                        {index + 1}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        }
+                                        title={
+                                            <Space>
+                                                <Text strong style={{ fontSize: '16px' }}>{doctor.doctor_name}</Text>
+                                                <Tag color="blue" style={{ fontSize: '12px' }}>ID: {doctor.doctor_id}</Tag>
+                                                {index < 3 && (
+                                                    <Tag
+                                                        color={index === 0 ? 'gold' : index === 1 ? 'default' : 'orange'}
+                                                        style={{ fontSize: '11px', fontWeight: 'bold' }}
+                                                    >
+                                                        #{index + 1}
+                                                    </Tag>
+                                                )}
+                                            </Space>
+                                        }
+                                        description={
+                                            <Space direction="vertical" size={6} style={{ marginTop: 8 }}>
+                                                <Rate
+                                                    disabled
+                                                    value={parseFloat(doctor.avg_rating)}
+                                                    style={{ fontSize: 16 }}
+                                                    allowHalf
+                                                />
+                                                <Space>
+                                                    <Text type="secondary" style={{ fontSize: '13px' }}>
+                                                        <strong>{doctor.avg_rating}</strong> ⭐
+                                                    </Text>
+                                                    <Text type="secondary" style={{ fontSize: '13px' }}>
+                                                        • {doctor.total_reviews} đánh giá
+                                                    </Text>
+                                                </Space>
+                                            </Space>
+                                        }
+                                    />
+                                </List.Item>
+                            )}
+                        />
+                    </Card>
+                </Col>
+            </Row>
+
+            <Row gutter={[16, 16]}>
+                <Col xs={24} lg={14}>
                     <Card title="Dịch vụ sử dụng nhiều nhất">
                         <Column
                             data={servicesCategory}
@@ -200,6 +299,43 @@ export default function Dashboard() {
                             xAxis={{ label: { autoHide: true, autoRotate: false } }}
                             meta={{ value: { alias: "Lượt sử dụng" } }}
                         />
+                    </Card>
+                </Col>
+                <Col xs={24} lg={10}>
+                    <Card title="Thống kê bổ sung">
+                        <Space direction="vertical" size={20} style={{ width: "100%" }}>
+                            <div style={{ textAlign: 'center' }}>
+                                <Statistic
+                                    title="Tổng số bác sĩ"
+                                    value={topDoctorsData.length}
+                                    suffix="bác sĩ"
+                                    valueStyle={{ color: '#1890ff', fontSize: '24px' }}
+                                />
+                            </div>
+                            <Divider style={{ margin: '8px 0' }} />
+                            <div style={{ textAlign: 'center' }}>
+                                <Statistic
+                                    title="Đánh giá trung bình"
+                                    value={topDoctorsData.length > 0 ?
+                                        (topDoctorsData.reduce((sum: number, doctor: TopDoctor) => sum + parseFloat(doctor.avg_rating), 0) / topDoctorsData.length).toFixed(2)
+                                        : "0"
+                                    }
+                                    suffix="⭐"
+                                    precision={2}
+                                    valueStyle={{ color: '#52c41a', fontSize: '24px' }}
+                                />
+                            </div>
+                            {topDoctorsData.length > 0 && (
+                                <>
+                                    <Divider style={{ margin: '8px 0' }} />
+                                    <div style={{ textAlign: 'center' }}>
+                                        <Text type="secondary" style={{ fontSize: '12px' }}>
+                                            Dựa trên {topDoctorsData.reduce((sum: number, doctor: TopDoctor) => sum + doctor.total_reviews, 0)} đánh giá tổng cộng
+                                        </Text>
+                                    </div>
+                                </>
+                            )}
+                        </Space>
                     </Card>
                 </Col>
             </Row>

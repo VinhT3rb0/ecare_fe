@@ -37,9 +37,9 @@ export const apiPackage = createApi({
             query: (id) => `package/${id}/`,
             providesTags: (result, error, id) => [{ type: "Package", id }],
         }),
-        getPackagesByDepartment: builder.query<any, string>({
-            query: (departmentId) => `department/${departmentId}`,
-            providesTags: (result, error, departmentId) => [{ type: "Package", id: `department-${departmentId}` }],
+        getPackagesByDepartment: builder.query<any, { departmentId: string | number; page?: number; limit?: number; name?: string }>({
+            query: ({ departmentId, ...params }) => ({ url: `department/${departmentId}`, params }),
+            providesTags: (result, error, { departmentId }) => [{ type: "Package", id: `department-${departmentId}` }],
         }),
         createPackage: builder.mutation<any, any>({
             query: (data) => ({

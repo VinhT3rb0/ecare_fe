@@ -123,10 +123,10 @@ const Navbar = () => {
             </div>
             <div className="hidden md:flex items-center space-x-8">
                 <Link href="/" className="text-white hover:text-[#11A998] font-medium">Trang chủ</Link>
-                <Link href="/specialties" className="text-white hover:text-[#11A998] font-medium">Chuyên khoa</Link>
+                <Link href="/specialties" className="text-white hover:text-[#11A998] font-medium">Giới thiệu</Link>
                 <Link href="/doctors" className="text-white hover:text-[#11A998] font-medium">Đội ngũ bác sĩ</Link>
-                <Link href="/" className="text-white hover:text-[#11A998] font-medium">Chuyên khoa</Link>
-                <Link href="/" className="text-white hover:text-[#11A998] font-medium">Liên hệ</Link>
+                <Link href="/services" className="text-white hover:text-[#11A998] font-medium">Dịch vụ</Link>
+                <Link href="/contact" className="text-white hover:text-[#11A998] font-medium">Liên hệ</Link>
                 {role === "admin" && (
                     <Link
                         href="/management/dashboard"
